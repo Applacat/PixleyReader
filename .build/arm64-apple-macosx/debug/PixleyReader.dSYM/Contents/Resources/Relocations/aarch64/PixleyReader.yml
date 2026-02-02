@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyReader'
+relocations:     []
+...

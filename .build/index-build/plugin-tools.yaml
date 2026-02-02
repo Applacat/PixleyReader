@@ -1,0 +1,58 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "PackageStructure": ["<PackageStructure>"]
+  "PixleyReader-arm64-apple-macosx26.0-debug.module": ["<PixleyReader-arm64-apple-macosx26.0-debug.module>"]
+  "main": ["<PixleyReader-arm64-apple-macosx26.0-debug.module>"]
+  "test": ["<PixleyReader-arm64-apple-macosx26.0-debug.module>"]
+default: "main"
+nodes:
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/ContentView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/MarkdownEditor.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/MarkdownHighlighter.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/ChatMessage.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/FolderItem.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/PixleyIntent.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/PixleyReaderApp.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Services/FolderService.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Services/RecentFoldersManager.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/AITestView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/ChatView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/MarkdownView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/StartView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/DerivedSources/resource_bundle_accessor.swift"]
+    outputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/sources"]
+    description: "Write auxiliary file /Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/sources"
+
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader_PixleyReader.bundle/Assets.xcassets":
+    tool: copy-tool
+    inputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Resources/Assets.xcassets/"]
+    outputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader_PixleyReader.bundle/Assets.xcassets/"]
+    description: "Copying /Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Resources/Assets.xcassets"
+
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Library/Developer/CommandLineTools/usr/bin/swiftc"]
+    outputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+
+  "<PixleyReader-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/Modules/PixleyReader.swiftmodule"]
+    outputs: ["<PixleyReader-arm64-apple-macosx26.0-debug.module>"]
+
+  "C.PixleyReader-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/ContentView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/MarkdownEditor.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/MarkdownHighlighter.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/ChatMessage.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/FolderItem.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/PixleyIntent.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/PixleyReaderApp.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Services/FolderService.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Services/RecentFoldersManager.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/AITestView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/ChatView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/MarkdownView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Views/Screens/StartView.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/DerivedSources/resource_bundle_accessor.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt","<PixleyReader-arm64-apple-macosx26.0-debug.module-resources>","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/sources"]
+    outputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/Modules/PixleyReader.swiftmodule"]
+    description: "Compiling Swift Module 'PixleyReader' (14 sources)"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-module-name","PixleyReader","-emit-dependencies","-emit-module","-emit-module-path","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/Modules/PixleyReader.swiftmodule","-output-file-map","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/output-file-map.json","-incremental","@/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader.build/sources","-I","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx26.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-Onone","-enable-testing","-j10","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE","-module-cache-path","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-Xfrontend","-entry-point-function-name","-Xfrontend","PixleyReader_main","-swift-version","6","-Xfrontend","-experimental-lazy-typecheck","-Xfrontend","-experimental-skip-all-function-bodies","-Xfrontend","-experimental-allow-module-with-compiler-errors","-Xfrontend","-empty-abi-descriptor","-I","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-L","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-plugin-path","/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g","-Xcc","-isysroot","-Xcc","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-Xcc","-fPIC","-Xcc","-g","-package-name","pixleywriter"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Package.swift","/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+
+  "PixleyReader-arm64-apple-macosx26.0-debug.module-resources":
+    tool: phony
+    inputs: ["/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/index-build/arm64-apple-macosx/debug/PixleyReader_PixleyReader.bundle/Assets.xcassets/"]
+    outputs: ["<PixleyReader-arm64-apple-macosx26.0-debug.module-resources>"]
+

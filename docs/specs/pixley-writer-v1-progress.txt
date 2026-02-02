@@ -1,0 +1,13 @@
+PIXLEY WRITER v1.0 RELEASE PROGRESS
+
+[COMPLETE] File Browser Sidebar
+[COMPLETE] Shelf (Favorites)
+[COMPLETE] Markdown Viewer with Syntax Highlighting
+[COMPLETE] Liquid Glass UI
+[COMPLETE] Default App Handler
+[COMPLETE] OOD Architecture Refactor
+[COMPLETE] Accessibility Support
+
+STATUS: READY TO SHIP
+
+Next: Archive in Xcode → Distribute

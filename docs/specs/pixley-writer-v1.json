@@ -1,0 +1,41 @@
+{
+  "name": "Pixley Writer v1.0",
+  "status": "shipping",
+  "date": "2026-02-01",
+  "features": [
+    {
+      "id": "file-browser",
+      "name": "File Browser Sidebar",
+      "status": "complete"
+    },
+    {
+      "id": "shelf",
+      "name": "Shelf (Favorites)",
+      "status": "complete"
+    },
+    {
+      "id": "markdown-viewer",
+      "name": "Markdown Editor/Viewer",
+      "status": "complete"
+    },
+    {
+      "id": "liquid-glass",
+      "name": "Liquid Glass UI",
+      "status": "complete"
+    },
+    {
+      "id": "default-handler",
+      "name": "Default App Handler",
+      "status": "complete"
+    }
+  ],
+  "future": [
+    "Live file watching",
+    "Diff visualization",
+    "Slack-style change notifications"
+  ],
+  "requirements": {
+    "macos": "14.0+",
+    "architecture": "universal"
+  }
+}

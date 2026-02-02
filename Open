@@ -1,0 +1,18 @@
+🔄 Ralph loop activated in this session!
+
+Iteration: 1
+Max iterations: unlimited
+Completion promise: none (runs forever)
+
+The stop hook is now active. When you try to exit, the SAME PROMPT will be
+fed back to you. You'll see your previous work in files, creating a
+self-referential loop where you iteratively improve on the same task.
+
+To monitor: head -10 .claude/ralph-loop.local.md
+
+⚠️  WARNING: This loop cannot be stopped manually! It will run infinitely
+    unless you set --max-iterations or --completion-promise.
+
+🔄
+
+Epic 2: Package System - Implement US-2.1 through US-2.7 per docs/specs/pixley-reader-v1.md. This includes PixleyPackage document type, NaturalizationService, DocumentGroup integration, dock drop handling, File folder, security-scoped bookmark lifecycle, and stale bookmark recovery.

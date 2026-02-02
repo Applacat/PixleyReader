@@ -1,0 +1,136 @@
+{
+  "name": "Pixley Reader v1.0",
+  "version": "1.0",
+  "date": "2026-02-01",
+  "status": "approved",
+  "totalStories": 39,
+  "epics": [
+    {
+      "id": 1,
+      "name": "App Shell",
+      "stories": [
+        {"id": "US-1.1", "name": "Project Setup"},
+        {"id": "US-1.2", "name": "Three-Column NavigationSplitView"},
+        {"id": "US-1.3", "name": "Liquid Glass Materials"},
+        {"id": "US-1.4", "name": "Empty State Views"},
+        {"id": "US-1.5", "name": "Sidebar Segmented Control"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Package System",
+      "stories": [
+        {"id": "US-2.1", "name": "PixleyPackage Document Type"},
+        {"id": "US-2.2", "name": "Naturalization Service"},
+        {"id": "US-2.3", "name": "DocumentGroup Integration"},
+        {"id": "US-2.4", "name": "Dock Drop Handling"},
+        {"id": "US-2.5", "name": "File → Open Folder"},
+        {"id": "US-2.6", "name": "Security-Scoped Bookmark Lifecycle"},
+        {"id": "US-2.7", "name": "Stale Bookmark Recovery"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "File Browser",
+      "stories": [
+        {"id": "US-3.1", "name": "Folder Contents Display"},
+        {"id": "US-3.2", "name": "File Selection"},
+        {"id": "US-3.3", "name": "Subfolder Navigation"},
+        {"id": "US-3.4", "name": "File Browser Tests"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Stream",
+      "stories": [
+        {"id": "US-4.1", "name": "RecentFilesManager (SQLite)"},
+        {"id": "US-4.2", "name": "Stream List View"},
+        {"id": "US-4.3", "name": "Stream Management"},
+        {"id": "US-4.4", "name": "Stream Tests"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Markdown Viewer",
+      "stories": [
+        {"id": "US-5.1", "name": "MarkdownHighlighter Integration (with tables)"},
+        {"id": "US-5.2", "name": "MarkdownEditor Read-Only Mode"},
+        {"id": "US-5.3", "name": "Document Loading"},
+        {"id": "US-5.4", "name": "Single File Support"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "File Watching",
+      "stories": [
+        {"id": "US-6.1", "name": "Folder-Based File Monitor (FSEvents)"},
+        {"id": "US-6.2", "name": "Change Debouncing"},
+        {"id": "US-6.3", "name": "Refresh Pill UI"},
+        {"id": "US-6.4", "name": "Reload Action"},
+        {"id": "US-6.5", "name": "Pill Persistence"}
+      ]
+    },
+    {
+      "id": 7,
+      "name": "AI Chat",
+      "stories": [
+        {"id": "US-7.1", "name": "Foundation Models Availability"},
+        {"id": "US-7.2", "name": "Chat Panel UI (window grows)"},
+        {"id": "US-7.3", "name": "Document Context Injection"},
+        {"id": "US-7.4", "name": "Structured Response Handling (@Generable)"},
+        {"id": "US-7.5", "name": "Chat Ephemerality"},
+        {"id": "US-7.6", "name": "Clear Chat Button"}
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Polish",
+      "stories": [
+        {"id": "US-8.1", "name": "Spring Animations"},
+        {"id": "US-8.2", "name": "Hover States"},
+        {"id": "US-8.3", "name": "Error States"},
+        {"id": "US-8.4", "name": "Comprehensive Test Suite"}
+      ]
+    }
+  ],
+  "decisions": {
+    "epicOrdering": "shell-first",
+    "packageStorage": "app-managed",
+    "refreshPillBehavior": "stay-until-acted-on",
+    "fileBrowserDisplay": "all-files-md-highlighted",
+    "chatPanelDefault": "collapsed",
+    "chatPanelExpand": "window-grows",
+    "keyboardShortcuts": "minimal",
+    "staleBookmarkHandling": "error-offer-relink",
+    "singleFileSupport": true,
+    "singleFileLayout": "three-column-with-stream",
+    "streamFeature": true,
+    "streamStorage": "sqlite",
+    "streamLimit": "unlimited-with-clear",
+    "chatToggle": "toolbar-button",
+    "aiOutput": "structured-generable",
+    "aiLoadingState": "simple-spinner",
+    "fileWatching": "folder-based-fsevents",
+    "tableRendering": true,
+    "testingApproach": "full-coverage",
+    "accessibility": "deferred-v1.1"
+  },
+  "platform": {
+    "os": "macOS 26",
+    "architecture": "Apple Silicon",
+    "swift": "5.9+",
+    "sandbox": false
+  },
+  "fixes": [
+    "BRD updated: Stream feature now in scope",
+    "BRD updated: Claude → Foundation Models in success criteria",
+    "Spec: Story count corrected to 39",
+    "Spec: Chat panel expands by growing window",
+    "Spec: Tables added to markdown rendering",
+    "Spec: @Generable structured output for AI",
+    "Spec: SQLite for Stream storage (not UserDefaults)",
+    "Spec: Folder-based FSEvents watching (handles rename/replace)",
+    "Spec: Security-scoped bookmark lifecycle story added",
+    "Spec: Single file mode uses three-column with Stream"
+  ]
+}

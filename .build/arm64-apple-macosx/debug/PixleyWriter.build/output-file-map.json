@@ -1,0 +1,103 @@
+{
+  "": {
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/master.swiftdeps"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/ContentView.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ContentView.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ContentView.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ContentView~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ContentView.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ContentView.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/DefaultAppBanner.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DefaultAppBanner.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DefaultAppBanner.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DefaultAppBanner~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DefaultAppBanner.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DefaultAppBanner.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/FileBrowserView.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileBrowserView.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileBrowserView.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileBrowserView~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileBrowserView.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileBrowserView.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/MarkdownEditor.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownEditor.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownEditor.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownEditor~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownEditor.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownEditor.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/MarkdownHighlighter.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownHighlighter.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownHighlighter.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownHighlighter~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownHighlighter.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/MarkdownHighlighter.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/AppConstants.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/AppConstants.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/AppConstants.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/AppConstants~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/AppConstants.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/AppConstants.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/FileItem.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileItem.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileItem.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileItem~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileItem.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileItem.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Models/Protocols.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/Protocols.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/Protocols.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/Protocols~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/Protocols.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/Protocols.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/PixleyWriterApp.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/PixleyWriterApp.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/PixleyWriterApp.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/PixleyWriterApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/PixleyWriterApp.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/PixleyWriterApp.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Services/DocumentManager.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DocumentManager.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DocumentManager.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DocumentManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DocumentManager.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/DocumentManager.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Services/FileSystemService.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileSystemService.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileSystemService.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileSystemService~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileSystemService.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/FileSystemService.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/Services/ShelfManager.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfManager.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfManager.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfManager.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfManager.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/ShelfView.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfView.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfView.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfView~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfView.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/ShelfView.dia"
+  },
+  "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/Sources/SidebarView.swift": {
+    "dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/SidebarView.d",
+    "object": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/SidebarView.swift.o",
+    "swiftmodule": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/SidebarView~partial.swiftmodule",
+    "swift-dependencies": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/SidebarView.swiftdeps",
+    "diagnostics": "/Users/etoduarte/0. Coding/Swift/Pixley-Writer/PixleyWriter/.build/arm64-apple-macosx/debug/PixleyWriter.build/SidebarView.dia"
+  }
+}

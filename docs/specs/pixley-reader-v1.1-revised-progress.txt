@@ -1,0 +1,77 @@
+# Pixley Reader v1.1 - Progress Tracker
+
+**Last Updated:** 2026-02-02
+**Current:** Story 1 in progress
+
+---
+
+## Execution Order
+
+```
+PHASE 1 - Fix + Foundation:
+  Story 1 → Story 2
+
+PHASE 2 - Native UI:
+  Story 3
+```
+
+---
+
+## Story 1: Fix Drill-Down Bug
+Status: [COMPLETE]
+
+[x] .navigationDestination moved to NavigationStack
+[x] startAccessingSecurityScopedResource() calls added
+[x] Replaced NavigationSplitView with HStack (NavigationStack now independent)
+[x] Removed SidebarRootView wrapper (no longer needed)
+[x] Drilling into any folder shows contents
+[x] Works 3+ levels deep
+
+**Files changed:**
+- ContentView.swift (replaced NavigationSplitView with HStack)
+- PixleyReaderApp.swift
+
+---
+
+## Story 2: State Architecture + DI
+Status: [PENDING]
+
+[ ] Split AppState → NavigationState, DocumentState, ChatState, FolderState
+[ ] Each state via @Environment
+[ ] FolderService → protocol + injection
+[ ] RecentFoldersManager → protocol + injection
+[ ] All functionality unchanged
+
+**Opportunistic:**
+[ ] Remove print() statements
+[ ] Fix Task.sleep race condition
+[ ] Remove dead code
+[ ] Fix redundant initializations
+
+---
+
+## Story 3: Native Sidebar + Cross-Platform
+Status: [PENDING]
+
+[ ] Remove FolderRowView, FileRowView
+[ ] Use Label for rows
+[ ] NavigationLink(value:) for folders
+[ ] List(selection:) for files
+[ ] .badge() for markdown count
+[ ] Non-markdown dimmed
+[ ] NSOpenPanel → .fileImporter()
+[ ] onHover → .swipeActions
+[ ] Keyboard nav works
+[ ] VoiceOver works
+[ ] Builds for iOS
+[ ] Full-width click targets (not just text/icon) - iOS/macOS friendly
+
+**Opportunistic:**
+[ ] Fix .animation(value: true) bug
+[ ] Abstract NSColor
+
+---
+
+## Completed
+
+[x] v1.0 shipped

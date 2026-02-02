@@ -1,0 +1,117 @@
+{
+  "spec": {
+    "name": "Pixley Reader v1.1 (Revised)",
+    "date": "2026-02-02",
+    "status": "IN_PROGRESS"
+  },
+  "stories": [
+    {
+      "id": "US-0",
+      "title": "Quick Actions UX Redesign",
+      "status": "COMPLETE",
+      "priority": "HIGH",
+      "acceptance_criteria": [
+        "Quick Open label above button group",
+        "4 buttons in group (Apple pattern)",
+        "All buttons work correctly with NSOpenPanel"
+      ]
+    },
+    {
+      "id": "US-1",
+      "title": "Ask Pixley Opens Browser with Context",
+      "status": "COMPLETE",
+      "priority": "HIGH",
+      "acceptance_criteria": [
+        "Attached file's parent folder set as root",
+        "File visible and selected in sidebar",
+        "Chat panel opens automatically",
+        "Initial question appears in chat",
+        "AI response continues in chat panel"
+      ]
+    },
+    {
+      "id": "US-2",
+      "title": "Ask Pixley File Picker Redesign",
+      "status": "COMPLETE",
+      "priority": "HIGH",
+      "acceptance_criteria": [
+        "Ask Pixley about label with inline file picker button",
+        "Standard macOS button style for Choose File",
+        "Selected file shown as pill (rounded, clickable to replace)",
+        "Pill click replaces file (not separate X button)",
+        "Question text field separate from file selection",
+        "Remove old doc icon button"
+      ]
+    },
+    {
+      "id": "US-4",
+      "title": "Fix Drill-Down Bug",
+      "status": "PENDING",
+      "priority": "CRITICAL",
+      "blocks": ["US-3"],
+      "root_cause": "Security-scoped resource access not maintained for subfolders",
+      "acceptance_criteria": [
+        "Security-scoped resource access maintained for subfolder navigation",
+        "Drilling into any folder shows its contents",
+        "Works 3+ levels deep",
+        "No silent failures - errors logged if access denied"
+      ],
+      "verification": "Manual test: Open Documents, drill 3+ levels deep, content shows at each level"
+    },
+    {
+      "id": "US-5",
+      "title": "State Architecture Refactor",
+      "status": "PENDING",
+      "priority": "HIGH",
+      "depends_on": ["US-4"],
+      "blocks": ["US-3"],
+      "acceptance_criteria": [
+        "AppState split into 4 focused observable objects (NavigationState, DocumentState, ChatState, FolderState)",
+        "Each state object available via @Environment",
+        "FolderService defined as protocol, injected (not .shared singleton)",
+        "All existing functionality works unchanged",
+        "Views updated to use specific state objects"
+      ],
+      "verification": "Build succeeds, app launches, all v1.0 features work as before"
+    },
+    {
+      "id": "US-3",
+      "title": "Native Sidebar Refactor",
+      "status": "PENDING",
+      "priority": "HIGH",
+      "depends_on": ["US-4", "US-5"],
+      "acceptance_criteria": [
+        "Remove custom FolderRowView, FileRowView structs",
+        "Use standard List with Label for all rows",
+        "Folders use NavigationLink(value:) for push navigation",
+        "Files use List(selection:) binding for selection",
+        "Markdown count shown via .badge() modifier",
+        "Non-markdown files shown but dimmed/disabled",
+        "Sort: folders first, then files (alphabetically within groups)",
+        "Keyboard navigation works (arrow keys, enter)",
+        "VoiceOver announces items correctly",
+        "Feels native - portable to iOS unchanged"
+      ],
+      "verification": "Sidebar looks and feels like iOS Files app, keyboard navigation works, could copy to iOS with minimal changes"
+    }
+  ],
+  "execution_order": ["US-4", "US-5", "US-3"],
+  "out_of_scope": [
+    "Editing",
+    "File watching (FSEvents)",
+    "Search across documents",
+    "Light mode",
+    "Window state persistence",
+    "iCloud sync",
+    "Drop handling extraction"
+  ],
+  "design_decisions": {
+    "navigation_model": "iOS Files app style (push for folders, tap-select for files)",
+    "file_selection": "List(selection:) binding",
+    "markdown_count": ".badge() modifier",
+    "state_injection": "All via @Environment separately",
+    "non_markdown_files": "Show but dimmed/disabled",
+    "sort_order": "Folders first, then files (alphabetically within groups)",
+    "folder_service": "Injectable protocol (not singleton)"
+  }
+}
