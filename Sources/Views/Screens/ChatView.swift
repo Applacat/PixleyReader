@@ -339,9 +339,24 @@ struct ChatView: View {
         isWaitingForDocument = true
         defer { isWaitingForDocument = false }
 
-        // Wait for document content if not already loaded
+        // Wait for document content to load via callback (with timeout)
         if appState.documentContent.isEmpty {
-            let didLoad = await waitForDocumentWithTimeout()
+            let didLoad = await withCheckedContinuation { continuation in
+                // Set up callback for when document loads
+                appState.onDocumentLoaded = {
+                    continuation.resume(returning: true)
+                }
+
+                // Timeout after 3 seconds
+                Task {
+                    try? await Task.sleep(for: .seconds(3))
+                    // Only resume if callback hasn't fired yet
+                    if appState.onDocumentLoaded != nil {
+                        appState.onDocumentLoaded = nil
+                        continuation.resume(returning: false)
+                    }
+                }
+            }
 
             guard didLoad && !appState.documentContent.isEmpty else {
                 let errorMessage = ChatMessage(
@@ -356,37 +371,6 @@ struct ChatView: View {
         let userMessage = ChatMessage(role: .user, content: question)
         messages.append(userMessage)
         await askAI(question)
-    }
-
-    /// Wait for document to load with timeout using TaskGroup for clean cancellation
-    private func waitForDocumentWithTimeout() async -> Bool {
-        await withTaskGroup(of: Bool.self) { group in
-            // Task 1: Wait for callback from MarkdownView
-            group.addTask { @MainActor in
-                await withCheckedContinuation { continuation in
-                    self.appState.onDocumentLoaded = {
-                        continuation.resume(returning: true)
-                    }
-                }
-            }
-
-            // Task 2: Timeout
-            group.addTask {
-                try? await Task.sleep(for: ChatService.documentLoadTimeout)
-                return false
-            }
-
-            // First result wins, cancel the other
-            let result = await group.next() ?? false
-            group.cancelAll()
-
-            // Clean up callback
-            await MainActor.run {
-                self.appState.onDocumentLoaded = nil
-            }
-
-            return result
-        }
     }
 
     @MainActor
