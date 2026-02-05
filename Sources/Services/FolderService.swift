@@ -32,7 +32,10 @@ final class FolderService {
     private var cache: [String: CachedFolder] = [:]
 
     private init() {
-        loadCacheFromDisk()
+        // Load cache asynchronously to avoid blocking main thread during init
+        Task.detached(priority: .utility) { [weak self] in
+            await self?.loadCacheFromDisk()
+        }
     }
 
     // MARK: - Cache Management
@@ -43,14 +46,22 @@ final class FolderService {
             .appendingPathComponent("folder_cache.json")
     }
 
-    private func loadCacheFromDisk() {
-        guard let url = cacheFileURL,
-              let data = try? Data(contentsOf: url),
-              let cached = try? JSONDecoder().decode([String: CachedFolder].self, from: data) else {
-            return
+    private func loadCacheFromDisk() async {
+        guard let url = cacheFileURL else { return }
+
+        // Perform file I/O off main thread
+        let loaded: [String: CachedFolder]? = await Task.detached(priority: .utility) {
+            guard let data = try? Data(contentsOf: url),
+                  let cached = try? JSONDecoder().decode([String: CachedFolder].self, from: data) else {
+                return nil
+            }
+            return cached
+        }.value
+
+        if let cached = loaded {
+            cache = cached
+            logger.debug("Loaded cache with \(cached.count) folders")
         }
-        cache = cached
-        logger.debug("Loaded cache with \(cached.count) folders")
     }
 
     private func saveCacheToDisk() {

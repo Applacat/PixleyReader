@@ -339,35 +339,25 @@ struct ChatView: View {
         isWaitingForDocument = true
         defer { isWaitingForDocument = false }
 
-        // Wait for document content to load via callback (with timeout)
-        // Document may already be loaded, or MarkdownView will call the callback when done
-        if appState.documentContent.isEmpty {
-            let didLoad = await withCheckedContinuation { continuation in
-                // Set up callback for when document loads
-                appState.onDocumentLoaded = {
-                    continuation.resume(returning: true)
-                }
-
-                // Timeout after 3 seconds
-                Task {
-                    try? await Task.sleep(for: .seconds(3))
-                    // Only resume if callback hasn't fired yet
-                    if appState.onDocumentLoaded != nil {
-                        appState.onDocumentLoaded = nil
-                        continuation.resume(returning: false)
-                    }
-                }
+        // Wait for document content using ChatService's structured concurrency helper
+        let result = await chatService.waitForDocument(
+            isCurrentlyEmpty: appState.documentContent.isEmpty,
+            setLoadCallback: { callback in
+                appState.onDocumentLoaded = callback
+            },
+            clearLoadCallback: {
+                appState.onDocumentLoaded = nil
             }
+        )
 
-            // If document still hasn't loaded, show helpful error
-            guard didLoad && !appState.documentContent.isEmpty else {
-                let errorMessage = ChatMessage(
-                    role: .assistant,
-                    content: "Unable to load the document. Please try selecting it again from the sidebar."
-                )
-                messages.append(errorMessage)
-                return
-            }
+        // Handle timeout or still-empty document
+        if result == .timeout || appState.documentContent.isEmpty {
+            let errorMessage = ChatMessage(
+                role: .assistant,
+                content: "Unable to load the document. Please try selecting it again from the sidebar."
+            )
+            messages.append(errorMessage)
+            return
         }
 
         let userMessage = ChatMessage(role: .user, content: question)

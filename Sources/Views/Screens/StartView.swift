@@ -194,13 +194,13 @@ struct StartView: View {
         }
         panel.message = "Grant access to \(name)"
 
-        panel.begin { response in
+        panel.begin { [weak self] response in
             guard response == .OK, let selectedURL = panel.url else { return }
 
             // Save bookmark via manager
             SecurityScopedBookmarkManager.shared.saveBookmark(selectedURL, for: directory)
 
-            self.openFolder(selectedURL)
+            self?.openFolder(selectedURL)
         }
     }
     #endif
@@ -214,9 +214,9 @@ struct StartView: View {
         panel.message = "Choose a folder to browse"
         panel.prompt = "Open"
 
-        panel.begin { response in
+        panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
-            self.openFolder(url)
+            self?.openFolder(url)
         }
         #endif
     }

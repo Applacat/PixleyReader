@@ -63,7 +63,7 @@ struct AIMDReaderApp: App {
         Window("AI.md Reader", id: "start") {
             StartView(performLaunchIfNeeded: performLaunchIfNeeded)
                 .environment(appState)
-                .applyColorSchemePreference()
+                .preferredColorScheme(appState.colorSchemeOverride)
         }
         #if os(macOS)
         .defaultLaunchBehavior(.presented)
@@ -76,7 +76,7 @@ struct AIMDReaderApp: App {
         WindowGroup("AI.md Reader", id: "browser") {
             BrowserView()
                 .environment(appState)
-                .applyColorSchemePreference()
+                .preferredColorScheme(appState.colorSchemeOverride)
                 .onOpenURL { url in
                     handleOpenURL(url)
                 }
@@ -206,12 +206,12 @@ struct AIMDReaderApp: App {
         panel.message = "Choose a folder to browse markdown files"
         panel.prompt = "Choose"
 
-        panel.begin { response in
+        panel.begin { [weak self] response in
             guard response == .OK, let folderURL = panel.url else { return }
-            self.appState.setRootFolder(folderURL)
+            self?.appState.setRootFolder(folderURL)
         }
     }
-    
+
     // MARK: - Open Welcome Tutorial
 
     /// Opens the Welcome folder to a specific page
@@ -247,7 +247,7 @@ struct AIMDReaderApp: App {
         // The Start window will observe shouldOpenBrowser and redirect to Browser
         if NSApp.windows.filter({ $0.isVisible }).isEmpty {
             // Force Start window to appear, which will then redirect to Browser
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 NSApp.sendAction(#selector(NSWindow.makeKeyAndOrderFront(_:)), to: nil, from: nil)
             }
         }
@@ -282,10 +282,10 @@ struct AIMDReaderApp: App {
         panel.message = "Grant access to open this markdown file"
         panel.prompt = "Allow"
 
-        panel.begin { response in
+        panel.begin { [weak self] response in
             guard response == .OK, let selectedURL = panel.url else { return }
-            self.appState.setRootFolder(selectedURL)
-            self.appState.selectFile(file)
+            self?.appState.setRootFolder(selectedURL)
+            self?.appState.selectFile(file)
         }
     }
     #endif
@@ -294,9 +294,15 @@ struct AIMDReaderApp: App {
 // MARK: - App State
 
 /// Central application state.
+///
+/// Note: This is the legacy API maintained for backward compatibility.
+/// New code should prefer using AppCoordinator with its decomposed state containers.
+/// Eventually this will be deprecated in favor of AppCoordinator.
 @MainActor
 @Observable
 final class AppState {
+
+    // MARK: - Properties (delegating to coordinator where appropriate)
 
     /// Root folder selected by user (nil until user selects one)
     var rootFolderURL: URL? = nil
@@ -331,6 +337,9 @@ final class AppState {
 
     /// Current error to display in the status bar (auto-clears after timeout)
     var currentError: AppError? = nil
+
+    /// Color scheme override for the session (nil = follow system, not persisted)
+    var colorSchemeOverride: ColorScheme? = nil
 
     // MARK: - Actions
 
@@ -381,11 +390,11 @@ final class AppState {
         currentError = error
 
         // Auto-dismiss after 5 seconds
-        Task {
+        Task { [weak self] in
             try? await Task.sleep(for: .seconds(5))
             // Only clear if it's still the same error
-            if currentError == error {
-                currentError = nil
+            if self?.currentError == error {
+                self?.currentError = nil
             }
         }
     }
@@ -410,29 +419,6 @@ final class AppState {
         initialChatQuestion = question
         isAIChatVisible = true
         fileHasChanges = false
-    }
-}
-// MARK: - Color Scheme Preference Helper
-
-extension View {
-    func applyColorSchemePreference() -> some View {
-        self.modifier(ColorSchemePreferenceModifier())
-    }
-}
-
-struct ColorSchemePreferenceModifier: ViewModifier {
-    @AppStorage("colorScheme") private var colorScheme: String = "dark"
-    
-    func body(content: Content) -> some View {
-        content.preferredColorScheme(preferredColorScheme)
-    }
-    
-    private var preferredColorScheme: ColorScheme? {
-        switch colorScheme {
-        case "light": return .light
-        case "dark": return .dark
-        default: return nil
-        }
     }
 }
 

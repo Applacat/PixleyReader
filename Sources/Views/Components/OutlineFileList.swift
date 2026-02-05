@@ -87,6 +87,14 @@ struct OutlineFileList: NSViewRepresentable {
         weak var outlineView: NSOutlineView?
         private var hasPerformedInitialExpansion = false
 
+        /// Static placeholder to avoid repeated allocations in data source methods
+        /// This is used only as a safety fallback and should never actually appear in UI
+        private static let placeholderItem = FolderItem(
+            url: URL(fileURLWithPath: "/"),
+            isFolder: false,
+            markdownCount: 0
+        )
+
         init(items: [FolderItem], selection: Binding<URL?>) {
             self.items = items
             self.selection = selection
@@ -188,14 +196,14 @@ struct OutlineFileList: NSViewRepresentable {
         func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
             if let folderItem = item as? FolderItem {
                 guard let children = folderItem.children, index < children.count else {
-                    // Safety: Return empty item if children is nil or index out of bounds
-                    return FolderItem(url: URL(fileURLWithPath: "/"), isFolder: false, markdownCount: 0)
+                    // Safety: Return static placeholder if children is nil or index out of bounds
+                    return Self.placeholderItem
                 }
                 return children[index]
             }
             guard index < items.count else {
-                // Safety: Return empty item if index out of bounds
-                return FolderItem(url: URL(fileURLWithPath: "/"), isFolder: false, markdownCount: 0)
+                // Safety: Return static placeholder if index out of bounds
+                return Self.placeholderItem
             }
             return items[index]
         }

@@ -274,22 +274,26 @@ struct FontSizeControls: View {
     }
 }
 
-/// Toolbar toggle for dark/light mode
+/// Toolbar toggle for dark/light mode (session-only, defaults to system)
 struct AppearanceToggle: View {
 
-    @AppStorage("colorScheme") private var colorScheme: String = "dark"
+    @Environment(AppState.self) private var appState
 
     private var isDarkMode: Bool {
-        colorScheme == "dark"
+        // nil means system, treat as dark for icon purposes
+        appState.colorSchemeOverride == .dark || appState.colorSchemeOverride == nil
     }
 
     var body: some View {
+        @Bindable var appState = appState
+
         Button {
-            colorScheme = isDarkMode ? "light" : "dark"
+            // Toggle between light and dark (never back to nil/system once toggled)
+            appState.colorSchemeOverride = appState.colorSchemeOverride == .dark ? .light : .dark
         } label: {
-            Image(systemName: isDarkMode ? "moon.fill" : "sun.max.fill")
+            Image(systemName: appState.colorSchemeOverride == .light ? "sun.max.fill" : "moon.fill")
         }
-        .help(isDarkMode ? "Switch to light mode" : "Switch to dark mode")
+        .help(appState.colorSchemeOverride == .light ? "Switch to dark mode" : "Switch to light mode")
         .controlSize(.small)
     }
 }

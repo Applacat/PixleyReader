@@ -4,9 +4,15 @@ import PackageDescription
 let package = Package(
     name: "AIMDReader",
     platforms: [.macOS(.v26)],
+    dependencies: [
+        .package(path: "Packages/aimdRenderer")
+    ],
     targets: [
         .executableTarget(
             name: "AIMDReader",
+            dependencies: [
+                .product(name: "aimdRenderer", package: "aimdRenderer")
+            ],
             path: ".",
             exclude: [
                 "cal",
@@ -15,7 +21,8 @@ let package = Package(
                 "project.yml",
                 "CLAUDE.md",
                 "Resources/Info.plist",
-                "Resources/AIMDReader.entitlements"
+                "Resources/AIMDReader.entitlements",
+                "Packages"
             ],
             sources: ["Sources"],
             resources: [

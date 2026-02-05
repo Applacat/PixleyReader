@@ -184,4 +184,54 @@ final class ChatService {
     func checkAvailability() -> Bool {
         SystemLanguageModel.default.availability == .available
     }
+
+    // MARK: - Document Loading Coordination
+
+    /// Result of waiting for document content
+    enum DocumentWaitResult {
+        case loaded
+        case timeout
+        case alreadyLoaded
+    }
+
+    /// Wait for document content with timeout using structured concurrency.
+    /// Returns the result indicating if document loaded, timed out, or was already available.
+    func waitForDocument(
+        isCurrentlyEmpty: Bool,
+        setLoadCallback: (@escaping @MainActor () -> Void) -> Void,
+        clearLoadCallback: () -> Void,
+        timeout: Duration = .seconds(3)
+    ) async -> DocumentWaitResult {
+        // Document already has content
+        guard isCurrentlyEmpty else {
+            return .alreadyLoaded
+        }
+
+        // Use async stream for clean cancellation handling
+        let result = await withTaskGroup(of: DocumentWaitResult.self) { group in
+            // Task 1: Wait for callback
+            group.addTask { @MainActor in
+                await withCheckedContinuation { continuation in
+                    setLoadCallback {
+                        continuation.resume(returning: .loaded)
+                    }
+                }
+            }
+
+            // Task 2: Timeout
+            group.addTask {
+                try? await Task.sleep(for: timeout)
+                return .timeout
+            }
+
+            // Return first result (loaded or timeout)
+            let result = await group.next() ?? .timeout
+            group.cancelAll()
+            return result
+        }
+
+        // Clear callback regardless of result
+        clearLoadCallback()
+        return result
+    }
 }
