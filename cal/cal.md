@@ -152,6 +152,34 @@ HStack(spacing: 0)
 
 ---
 
+## 2026-02-02 - Recents Feature
+
+**Request:** Rename "Recent Folders" to "Recents" and show last 4 clicked files.
+
+**Changes made:**
+
+### RecentFoldersManager.swift
+- `RecentItem` struct already existed (for unified model)
+- Added `removeFolderByPath()` for path-based removal
+- Updated `removeRecentFile()` to match by path (not ID)
+- `getAllRecents()` combines folders + files sorted by date
+
+### ContentView.swift
+- Added `addRecentFile()` call in `handleTap()` when markdown selected
+- Tracks parent folder for security scope resolution
+
+### StartView.swift
+- Changed `recentFolders: [RecentFolder]` → `recentItems: [RecentItem]`
+- Header: "Recent Folders" → "Recents"
+- New `RecentItemButton` shows folder icon or doc icon based on `isFolder`
+- New methods: `openRecentItem()`, `askAboutItem()`, `removeRecentItem()`
+- Files show parent folder name as subtitle
+- List height 200 → 260 for more items
+
+**Result:** Start screen now shows combined view of up to 10 folders + 4 most recently clicked files, sorted by date, with appropriate icons and hover actions.
+
+---
+
 ## 2026-02-02 - Welcome Folder & App Icon
 
 ### Welcome Tour Implemented
@@ -182,5 +210,53 @@ Created complete macOS icon set from user's 1024x1024 export:
 
 - **Bug A** (Quick Open hit targets): Already fixed with `.contentShape(Rectangle())` + generous padding
 - **Bug B** (Drill-down in detail pane): Already fixed with tap-to-expand inline (`expandedFolders: Set<String>`)
+
+---
+
+## 2026-02-03 DECISION - App Rename Required
+
+**Issue:** "Pixley" name has potential copyright concerns.
+
+**What stays:** Pixley the mascot character (the image/icon)
+**What changes:** App name "Pixley Reader" needs renaming
+
+**Pending:** New name selection
+
+---
+
+## 2026-02-03 AHA - Audit Completion
+
+All Swift 6 concurrency and memory audits pass with 0 issues.
+
+**Fixes applied (previous session):**
+- `DispatchQueue.main.asyncAfter` → `Task.sleep` (MarkdownHighlighter)
+- Task.detached with @MainActor self → `nonisolated static` methods (FolderService)
+- Security-scoped resource double-start → centralized in `AppState.setRootFolder()` only
+- Synchronous file I/O → wrapped in `Task.detached` (MarkdownView)
+- Removed unused `cacheQueue` DispatchQueue
+
+**Result:** Swift 6 strict concurrency ready, production-ready
+
+---
+
+## 2026-02-05 - Phase 2 Foundation Complete
+
+### Audit Fixes Applied (13 issues)
+- Fixed AppState crash from ColorSchemePreferenceModifier
+- Removed invalid `[weak self]` on structs (StartView, AIMDReaderApp are value types)
+- Made FolderService cache loading async (non-blocking init)
+- Added static placeholder in OutlineFileList (avoid allocations in hot path)
+- Simplified ChatView async coordination (avoid Swift 6 isolation checker bug)
+
+### Phase 2 Components Created (not yet wired)
+- **aimdRenderer package** - MarkdownTheme protocol, SwiftUITheme, 10 syntax themes
+- **AppCoordinator** - Decomposed state: NavigationState, UIState, DocumentState
+- **SettingsRepository** - Protocol + UserDefaults implementation
+
+### Build Status
+✅ Project builds successfully
+
+### Next Task
+Wire Phase 2 components into views OR skip to user-visible feature (Phase 4/5)
 
 ---

@@ -5,23 +5,24 @@
 - [COMPLETE] US-F2: Add AST Parsing with swift-markdown
 
 ## Phase 1.5: Pre-Refactor Cleanup (HIGH Priority)
-- [PENDING] US-F2.1: Extract FolderTreeFilter Utility
-- [PENDING] US-F2.2: Extract SecurityScopedBookmarkManager
-- [PENDING] US-F2.3: Extract ChatInputValidator
-- [PENDING] US-F2.4: Create ChatConfiguration Enum
-- [PENDING] US-F2.5: Fix Async Document Coordination
-- [PENDING] US-F2.6: Add Status Bar Error UI
+- [COMPLETE] US-F2.1: Extract FolderTreeFilter Utility
+- [COMPLETE] US-F2.2: Extract SecurityScopedBookmarkManager
+- [COMPLETE] US-F2.3: Extract ChatInputValidator
+- [COMPLETE] US-F2.4: Create ChatConfiguration Enum
+- [COMPLETE] US-F2.5: Fix Async Document Coordination
+- [COMPLETE] US-F2.6: Add Status Bar Error UI
 
 ## Phase 1.6: Tech Debt Cleanup (MEDIUM Priority, Optional)
-- [PENDING] US-F2.7: Fix MarkdownView Task Race Condition
-- [PENDING] US-F2.8: Fix NSTextViewDelegate Isolation
-- [PENDING] US-F2.9: Fix RecentFoldersManager Stale Bookmark Duplicate
-- [PENDING] US-F2.10: Fix FolderService Cache Invalidation
+- [COMPLETE] US-F2.7: Fix MarkdownView Task Race Condition
+- [COMPLETE] US-F2.8: Fix NSTextViewDelegate Isolation
+- [COMPLETE] US-F2.9: Fix RecentFoldersManager Stale Bookmark Duplicate
+- [COMPLETE] US-F2.10: Fix FolderService Cache Invalidation
 
 ## Phase 2: Foundation App
-- [PENDING] US-F3: Theme/Renderer Protocol System
-- [PENDING] US-F4: AppCoordinator and State Decomposition
-- [PENDING] US-F5: SettingsRepository Abstraction
+- [COMPLETE] US-F3: Theme/Renderer Protocol System (created, not wired)
+- [COMPLETE] US-F4: AppCoordinator and State Decomposition (created, not wired)
+- [COMPLETE] US-F5: SettingsRepository Abstraction (created, not wired)
+- [PENDING] US-F3/F4/F5 Integration: Wire new components into views
 
 ## Phase 3: Persistence
 - [PENDING] US-F6: FileMetadataRepository with SwiftData
@@ -47,9 +48,31 @@
 - [PENDING] US-4.5: File Watching
 
 ---
-Generated: 2026-02-04
-Total Stories: 30
-Completed: 2
+Updated: 2026-02-05
+Total Stories: 31
+Completed: 16
+
+## Session Notes: 2026-02-05
+
+### Audit Fixes (13 issues)
+- Fixed AppState crash from ColorSchemePreferenceModifier
+- Added [weak self] to Task auto-dismiss in AppState/UIState
+- Fixed NSOpenPanel closures (removed invalid weak self on structs)
+- Changed DispatchQueue.main.async → Task { @MainActor in }
+- Made FolderService cache loading async (non-blocking init)
+- Added static placeholder in OutlineFileList (avoid allocations)
+- Simplified ChatView async coordination (avoid Swift 6 isolation bug)
+
+### Phase 2 Components Created
+- `Packages/aimdRenderer/` - MarkdownTheme protocol, SwiftUITheme, 10 syntax themes
+- `Sources/Coordinator/AppCoordinator.swift` - Decomposed state containers
+- `Sources/Settings/SettingsRepository.swift` - Protocol + UserDefaults impl
+
+### Build Status
+✅ Project builds successfully (Xcode)
+
+### Next Step
+Wire Phase 2 components into views (replace AppState → AppCoordinator, add SettingsRepository to Environment)
 
 ## Key Architectural Decisions
 1. AppCoordinator pattern for state management
@@ -61,48 +84,3 @@ Completed: 2
 7. Phase 1.5/1.6 inserted for audit fixes (2026-02-04)
 8. Async document coordination via callback on AppState
 9. Error display via status bar (hidden normally, slides up on error)
-
-## Phase 1 Completion Notes (2026-02-04)
-
-### US-F1: aimdRenderer Package with DocumentModel ✓
-- Created Swift Package at `Packages/aimdRenderer`
-- `DocumentModel` struct with `content: String`, `lines: [Line]`, `ast: MarkdownAST`
-- `Line` struct with `number: Int`, `range: Range<String.Index>`, `content: Substring`
-- Package builds successfully: `swift build` passes
-- Main app Package.swift updated to depend on aimdRenderer
-
-### US-F2: AST Parsing with swift-markdown ✓
-- swift-markdown (0.7.3) added as package dependency
-- `MarkdownAST` type wraps parsed document
-- Extracts: headings, code blocks, links, paragraphs with line numbers
-- `DocumentModel.ast` provides semantic access to markdown structure
-- Unit tests written (XCTest) for parsing validation
-
-### Package Structure
-```
-Packages/aimdRenderer/
-├── Package.swift
-├── Sources/aimdRenderer/
-│   ├── aimdRenderer.swift
-│   └── Models/
-│       ├── DocumentModel.swift
-│       ├── Line.swift
-│       └── MarkdownAST.swift
-└── Tests/aimdRendererTests/
-    └── DocumentModelTests.swift
-```
-
-## Phase 1.5 Notes (2026-02-04)
-
-Added based on SwiftUI Architecture Audit findings:
-- 6 HIGH priority issues identified
-- Each extraction requires 3+ unit tests
-- Prepares codebase for AppCoordinator refactor
-
-### Audit Sources
-- ContentView.swift:240-260 (tree filtering)
-- StartView.swift:167-199 (bookmark duplication)
-- ChatView.swift:372-400 (validation logic)
-- ChatView.swift:23,64-67 (scattered constants)
-- ChatView.swift:337-369 (polling pattern)
-- MarkdownEditor.swift:102-121 (silent errors)
