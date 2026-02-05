@@ -18,9 +18,6 @@ struct ChatView: View {
 
     // Service for business logic (testable)
     private let chatService = ChatService()
-    
-    // Limit message history to prevent unbounded memory growth
-    private let maxMessageHistory = 50
 
     /// Estimated context usage for the next request (delegated to service)
     private var contextEstimate: ContextEstimate {
@@ -75,8 +72,8 @@ struct ChatView: View {
                 Spacer()
                 
                 // Show warning when approaching message limit
-                if messages.count > maxMessageHistory * 3 / 4 {
-                    Text("\(messages.count)/\(maxMessageHistory)")
+                if messages.count > ChatConfiguration.maxMessageHistory * 3 / 4 {
+                    Text("\(messages.count)/\(ChatConfiguration.maxMessageHistory)")
                         .font(.caption2)
                         .foregroundStyle(.orange)
                 }
@@ -342,25 +339,35 @@ struct ChatView: View {
         isWaitingForDocument = true
         defer { isWaitingForDocument = false }
 
-        // Wait for document content to load (with timeout)
-        // Poll the document content with exponential backoff
-        var attempts = 0
-        let maxAttempts = 20 // Up to ~2 seconds total
-        
-        while appState.documentContent.isEmpty && attempts < maxAttempts {
-            let delay = min(50 * (1 << min(attempts / 3, 3)), 200) // 50ms → 100ms → 200ms
-            try? await Task.sleep(for: .milliseconds(delay))
-            attempts += 1
-        }
-        
-        // If document still hasn't loaded, show helpful error
-        guard !appState.documentContent.isEmpty else {
-            let errorMessage = ChatMessage(
-                role: .assistant, 
-                content: "Unable to load the document. Please try selecting it again from the sidebar."
-            )
-            messages.append(errorMessage)
-            return
+        // Wait for document content to load via callback (with timeout)
+        // Document may already be loaded, or MarkdownView will call the callback when done
+        if appState.documentContent.isEmpty {
+            let didLoad = await withCheckedContinuation { continuation in
+                // Set up callback for when document loads
+                appState.onDocumentLoaded = {
+                    continuation.resume(returning: true)
+                }
+
+                // Timeout after 3 seconds
+                Task {
+                    try? await Task.sleep(for: .seconds(3))
+                    // Only resume if callback hasn't fired yet
+                    if appState.onDocumentLoaded != nil {
+                        appState.onDocumentLoaded = nil
+                        continuation.resume(returning: false)
+                    }
+                }
+            }
+
+            // If document still hasn't loaded, show helpful error
+            guard didLoad && !appState.documentContent.isEmpty else {
+                let errorMessage = ChatMessage(
+                    role: .assistant,
+                    content: "Unable to load the document. Please try selecting it again from the sidebar."
+                )
+                messages.append(errorMessage)
+                return
+            }
         }
 
         let userMessage = ChatMessage(role: .user, content: question)
@@ -370,32 +377,29 @@ struct ChatView: View {
 
     @MainActor
     private func sendMessage() {
-        let question = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Validate input length (max ~2000 chars for a single question)
-        guard !question.isEmpty else { return }
-        guard question.count <= 2000 else {
+        // Validate input using the validator
+        switch ChatInputValidator.validate(inputText) {
+        case .failure(.empty):
+            return  // Silent return for empty input
+        case .failure(.tooLong(let max)):
             let errorMessage = ChatMessage(
-                role: .assistant, 
-                content: "Your question is too long. Please keep questions under 2000 characters."
+                role: .assistant,
+                content: "Your question is too long. Please keep questions under \(max) characters."
             )
             messages.append(errorMessage)
             return
-        }
+        case .success(let question):
+            let userMessage = ChatMessage(role: .user, content: question)
+            messages.append(userMessage)
 
-        let userMessage = ChatMessage(role: .user, content: question)
-        messages.append(userMessage)
-        
-        // Limit message history to prevent unbounded memory growth
-        if messages.count > maxMessageHistory {
-            // Keep the most recent messages
-            messages = Array(messages.suffix(maxMessageHistory))
-        }
-        
-        inputText = ""
+            // Limit message history to prevent unbounded memory growth
+            messages = ChatInputValidator.trimHistory(messages, max: ChatConfiguration.maxMessageHistory)
 
-        Task {
-            await askAI(question)
+            inputText = ""
+
+            Task {
+                await askAI(question)
+            }
         }
     }
 
@@ -421,8 +425,8 @@ struct ChatView: View {
             messages.append(assistantMessage)
             
             // Limit message history after AI response as well
-            if messages.count > maxMessageHistory {
-                messages = Array(messages.suffix(maxMessageHistory))
+            if messages.count > ChatConfiguration.maxMessageHistory {
+                messages = Array(messages.suffix(ChatConfiguration.maxMessageHistory))
             }
         } catch {
             // Create user-friendly error messages

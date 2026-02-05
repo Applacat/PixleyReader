@@ -13,6 +13,10 @@ struct BrowserView: View {
 
     @State private var isDropTargeted = false
 
+    // State restoration
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @SceneStorage("lastSelectedFile") private var lastSelectedFilePath: String = ""
+
     // MARK: - Body
 
     var body: some View {
@@ -41,7 +45,7 @@ struct BrowserView: View {
     private var browserContent: some View {
         @Bindable var appState = appState
 
-        return NavigationSplitView {
+        return NavigationSplitView(columnVisibility: $columnVisibility) {
             OutlineFileListWrapper()
                 .navigationSplitViewColumnWidth(min: 280, ideal: 400, max: 600)
         } detail: {
@@ -51,19 +55,36 @@ struct BrowserView: View {
                 noSelectionView
             }
         }
+        .onAppear {
+            // Consume the flag if it was set by menu commands
+            if appState.shouldOpenBrowser {
+                appState.shouldOpenBrowser = false
+            }
+
+            // Restore last selected file if valid
+            if !lastSelectedFilePath.isEmpty && appState.selectedFile == nil {
+                let url = URL(fileURLWithPath: lastSelectedFilePath)
+                if FileManager.default.fileExists(atPath: url.path) {
+                    appState.selectFile(url)
+                }
+            }
+        }
+        .onChange(of: appState.selectedFile) { _, newFile in
+            // Persist selected file
+            lastSelectedFilePath = newFile?.path ?? ""
+        }
         #if os(macOS)
         .inspector(isPresented: $appState.isAIChatVisible) {
             ChatView()
                 .inspectorColumnWidth(min: 250, ideal: 280, max: 400)
         }
         .toolbar {
-            // Font size controls + AI Chat toggle
+            // Font size controls + Appearance toggle + AI Chat toggle
             ToolbarItemGroup(placement: .primaryAction) {
                 FontSizeControls()
-                
-                Divider()
-                    .frame(height: 16)
-                
+
+                AppearanceToggle()
+
                 Button {
                     withAnimation {
                         appState.isAIChatVisible.toggle()
@@ -90,6 +111,7 @@ struct BrowserView: View {
                 dropOverlay
             }
         }
+        .errorBannerOverlay()
     }
 
     // MARK: - No Folder View
@@ -164,11 +186,12 @@ struct BrowserView: View {
 
 /// Wrapper for OutlineFileList that handles loading and filtering
 struct OutlineFileListWrapper: View {
-    
+
     @Environment(AppState.self) private var appState
     @State private var rootItems: [FolderItem] = []
+    @State private var displayItems: [FolderItem] = []  // Pre-filtered for display
     @State private var isLoading = false
-    
+
     var body: some View {
         Group {
             if isLoading {
@@ -176,7 +199,7 @@ struct OutlineFileListWrapper: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 OutlineFileList(
-                    items: filteredItems(rootItems),
+                    items: displayItems,
                     selection: Binding(
                         get: { appState.selectedFile },
                         set: { newValue in
@@ -199,50 +222,19 @@ struct OutlineFileListWrapper: View {
         isLoading = true
         FolderService.shared.invalidateCache(for: rootURL)
         rootItems = await FolderService.shared.loadTree(at: rootURL)
-        
+
+        // Pre-filter items for display (avoids filtering on every view update)
+        displayItems = FolderTreeFilter.filterMarkdownOnly(rootItems)
+
         // First launch welcome: select first markdown
         if appState.isFirstLaunchWelcome {
-            if let firstMarkdown = findFirstMarkdown(in: rootItems) {
+            if let firstMarkdown = FolderTreeFilter.findFirstMarkdown(in: displayItems) {
                 appState.selectFile(firstMarkdown.url)
             }
             appState.isFirstLaunchWelcome = false
         }
-        
+
         isLoading = false
-    }
-    
-    // Always filter to markdown-only (recursive, preserves filtered children)
-    private func filteredItems(_ items: [FolderItem]) -> [FolderItem] {
-        items.compactMap { item in
-            if item.isFolder {
-                // Keep folder if it has markdown files
-                let filteredChildren = filteredItems(item.children ?? [])
-                if filteredChildren.isEmpty {
-                    return nil
-                }
-                // Create new FolderItem with filtered children
-                return FolderItem(
-                    url: item.url,
-                    isFolder: true,
-                    markdownCount: filteredChildren.reduce(0) { $0 + $1.markdownCount },
-                    children: filteredChildren
-                )
-            } else {
-                // Only keep markdown files
-                return item.isMarkdown ? item : nil
-            }
-        }
-    }
-    
-    private func findFirstMarkdown(in items: [FolderItem]) -> FolderItem? {
-        for item in items {
-            if item.isMarkdown { return item }
-            if let children = item.children,
-               let found = findFirstMarkdown(in: children) {
-                return found
-            }
-        }
-        return nil
     }
 }
 
@@ -250,11 +242,11 @@ struct OutlineFileListWrapper: View {
 
 /// Toolbar controls for adjusting markdown display settings
 struct FontSizeControls: View {
-    
+
     @AppStorage("fontSize") private var fontSize: Double = 14.0
-    
+
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 2) {
             // Decrease font size
             Button {
                 fontSize = max(10, fontSize - 1)
@@ -263,7 +255,12 @@ struct FontSizeControls: View {
             }
             .help("Decrease font size")
             .disabled(fontSize <= 10)
-            
+
+            // Font size display
+            Text("\(Int(fontSize))")
+                .font(.system(size: 11, weight: .medium).monospacedDigit())
+                .frame(minWidth: 20)
+
             // Increase font size
             Button {
                 fontSize = min(32, fontSize + 1)
@@ -273,6 +270,26 @@ struct FontSizeControls: View {
             .help("Increase font size")
             .disabled(fontSize >= 32)
         }
+        .controlSize(.small)
+    }
+}
+
+/// Toolbar toggle for dark/light mode
+struct AppearanceToggle: View {
+
+    @AppStorage("colorScheme") private var colorScheme: String = "dark"
+
+    private var isDarkMode: Bool {
+        colorScheme == "dark"
+    }
+
+    var body: some View {
+        Button {
+            colorScheme = isDarkMode ? "light" : "dark"
+        } label: {
+            Image(systemName: isDarkMode ? "moon.fill" : "sun.max.fill")
+        }
+        .help(isDarkMode ? "Switch to light mode" : "Switch to dark mode")
         .controlSize(.small)
     }
 }

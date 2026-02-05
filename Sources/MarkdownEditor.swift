@@ -22,6 +22,9 @@ struct MarkdownEditor: NSViewRepresentable {
     @Binding var text: String
     @AppStorage("fontSize") private var fontSize: Double = 14.0
 
+    /// Callback for reporting errors (optional)
+    var onError: ((AppError) -> Void)? = nil
+
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSTextView.scrollableTextView()
         guard let textView = scrollView.documentView as? NSTextView else {
@@ -76,7 +79,7 @@ struct MarkdownEditor: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(self, fontSize: fontSize)
+        Coordinator(self, fontSize: fontSize, onError: onError)
     }
 
     @MainActor
@@ -85,10 +88,12 @@ struct MarkdownEditor: NSViewRepresentable {
         private var debouncedHighlighter: DebouncedHighlighter
         private var isUpdating = false
         var fontSize: Double
+        var onError: ((AppError) -> Void)?
 
-        init(_ parent: MarkdownEditor, fontSize: Double) {
+        init(_ parent: MarkdownEditor, fontSize: Double, onError: ((AppError) -> Void)? = nil) {
             self.parent = parent
             self.fontSize = fontSize
+            self.onError = onError
             let highlighter = MarkdownHighlighter(fontSize: fontSize)
             self.debouncedHighlighter = DebouncedHighlighter(highlighter: highlighter, debounceDelay: .milliseconds(150))
         }
@@ -101,10 +106,10 @@ struct MarkdownEditor: NSViewRepresentable {
 
         func applyHighlighting(to textView: NSTextView, text: String) {
             guard !isUpdating else { return }
-            
+
             // Security: Prevent DoS from extremely large files
             guard text.utf8.count <= MarkdownConfig.maxTextSize else {
-                print("Warning: Text exceeds maximum size limit")
+                onError?(.textSizeExceeded)
                 return
             }
             
@@ -121,30 +126,33 @@ struct MarkdownEditor: NSViewRepresentable {
         }
 
         nonisolated func textDidChange(_ notification: Notification) {
-            // Extract NSTextView reference before crossing isolation boundary
+            // Extract NSTextView before crossing isolation boundary
             guard let textView = notification.object as? NSTextView else { return }
-            let textContent = textView.string
 
-            Task { @MainActor [weak self, weak textView] in
-                guard let self, let textView else { return }
+            // AppKit always calls delegate methods on the main thread,
+            // so we can safely assume MainActor isolation
+            MainActor.assumeIsolated {
                 guard !isUpdating else { return }
-                
+
+                let textContent = textView.string
+
                 // Security: Prevent DoS from extremely large files
                 guard textContent.utf8.count <= MarkdownConfig.maxTextSize else {
-                    print("Warning: Text exceeds maximum size limit")
+                    onError?(.textSizeExceeded)
                     return
                 }
 
+                // Update parent binding synchronously (no Task overhead)
                 parent.text = textContent
 
                 // Use debounced highlighting for better performance
                 debouncedHighlighter.highlightDebounced(textContent) { [weak self, weak textView] attributed in
                     guard let self, let textView else { return }
                     guard !self.isUpdating else { return }
-                    
+
                     self.isUpdating = true
                     defer { self.isUpdating = false }
-                    
+
                     let selectedRanges = textView.selectedRanges
                     textView.textStorage?.setAttributedString(attributed)
                     textView.selectedRanges = selectedRanges

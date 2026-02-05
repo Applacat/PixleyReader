@@ -63,7 +63,7 @@ struct AIMDReaderApp: App {
         Window("AI.md Reader", id: "start") {
             StartView(performLaunchIfNeeded: performLaunchIfNeeded)
                 .environment(appState)
-                .preferredColorScheme(.dark)
+                .applyColorSchemePreference()
         }
         #if os(macOS)
         .defaultLaunchBehavior(.presented)
@@ -72,23 +72,14 @@ struct AIMDReaderApp: App {
         .restorationBehavior(.disabled)  // Always open centered, don't remember position
         #endif
 
-        #if DEBUG
-        // AI Test window - for experimenting with Foundation Models (DEBUG ONLY)
-        Window("AI Test", id: "ai-test") {
-            AITestView()
-                .preferredColorScheme(.dark)
-        }
-        #if os(macOS)
-        .defaultLaunchBehavior(.suppressed)
-        .windowResizability(.contentSize)
-        #endif
-        #endif
-
         // Browser window - shown after folder selection
         WindowGroup("AI.md Reader", id: "browser") {
             BrowserView()
                 .environment(appState)
                 .applyColorSchemePreference()
+                .onOpenURL { url in
+                    handleOpenURL(url)
+                }
         }
         #if os(macOS)
         .defaultLaunchBehavior(.suppressed)
@@ -121,12 +112,12 @@ struct AIMDReaderApp: App {
                     openWelcomeToPage("02-Browsing-Folders.md")
                 }
                 
-                Button("Ask AI") {
-                    openWelcomeToPage("03-Ask-AI.md")
+                Button("AI Chat") {
+                    openWelcomeToPage("03-AI-Chat.md")
                 }
-                
+
                 Button("Keyboard Shortcuts") {
-                    openWelcomeToPage("05-Keyboard-Shortcuts.md")
+                    openWelcomeToPage("04-Keyboard-Shortcuts.md")
                 }
                 
                 Divider()
@@ -245,7 +236,57 @@ struct AIMDReaderApp: App {
         appState.setRootFolder(welcomeURL)
         appState.selectFile(targetFile)
 
-        // The browser window will automatically open via AppState changes
+        // Signal that browser window should open (consumed by StartView)
+        appState.shouldOpenBrowser = true
+
+        // Ensure app is active and a window exists to observe the flag
+        // This handles the case where all windows are closed
+        NSApp.activate(ignoringOtherApps: true)
+
+        // If no windows exist, we need to trigger window creation
+        // The Start window will observe shouldOpenBrowser and redirect to Browser
+        if NSApp.windows.filter({ $0.isVisible }).isEmpty {
+            // Force Start window to appear, which will then redirect to Browser
+            DispatchQueue.main.async {
+                NSApp.sendAction(#selector(NSWindow.makeKeyAndOrderFront(_:)), to: nil, from: nil)
+            }
+        }
+    }
+
+    // MARK: - Deep Link Handling
+
+    /// Handle opening .md files from Finder (double-click, Open With)
+    private func handleOpenURL(_ url: URL) {
+        // Verify it's a markdown file
+        let ext = url.pathExtension.lowercased()
+        guard ext == "md" || ext == "markdown" else { return }
+
+        // Get parent folder
+        let parentFolder = url.deletingLastPathComponent()
+
+        // Try to access - if sandbox allows, open directly
+        if parentFolder.startAccessingSecurityScopedResource() {
+            appState.setRootFolder(parentFolder)
+            appState.selectFile(url)
+        } else {
+            // Request permission via NSOpenPanel
+            requestFolderAccess(for: parentFolder, thenSelect: url)
+        }
+    }
+
+    private func requestFolderAccess(for folder: URL, thenSelect file: URL) {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.directoryURL = folder
+        panel.message = "Grant access to open this markdown file"
+        panel.prompt = "Allow"
+
+        panel.begin { response in
+            guard response == .OK, let selectedURL = panel.url else { return }
+            self.appState.setRootFolder(selectedURL)
+            self.appState.selectFile(file)
+        }
     }
     #endif
 }
@@ -280,6 +321,16 @@ final class AppState {
 
     /// Initial question for chat (set from start screen, cleared after use)
     var initialChatQuestion: String? = nil
+
+    /// Flag to trigger browser window opening (set by menu commands, consumed by views)
+    var shouldOpenBrowser: Bool = false
+
+    /// Callback for when document finishes loading (used for async coordination)
+    /// Set by ChatView when waiting for document, called by MarkdownView after load
+    var onDocumentLoaded: (@MainActor () -> Void)? = nil
+
+    /// Current error to display in the status bar (auto-clears after timeout)
+    var currentError: AppError? = nil
 
     // MARK: - Actions
 
@@ -325,6 +376,25 @@ final class AppState {
         fileHasChanges = false
     }
 
+    /// Shows an error in the status bar with auto-dismiss after 5 seconds
+    func showError(_ error: AppError) {
+        currentError = error
+
+        // Auto-dismiss after 5 seconds
+        Task {
+            try? await Task.sleep(for: .seconds(5))
+            // Only clear if it's still the same error
+            if currentError == error {
+                currentError = nil
+            }
+        }
+    }
+
+    /// Manually dismisses the current error
+    func dismissError() {
+        currentError = nil
+    }
+
     /// Open browser with a specific file selected and chat ready
     func openWithFileContext(fileURL: URL, question: String) {
         let parentFolder = fileURL.deletingLastPathComponent()
@@ -351,7 +421,7 @@ extension View {
 }
 
 struct ColorSchemePreferenceModifier: ViewModifier {
-    @AppStorage("colorScheme") private var colorScheme: String = "system"
+    @AppStorage("colorScheme") private var colorScheme: String = "dark"
     
     func body(content: Content) -> some View {
         content.preferredColorScheme(preferredColorScheme)

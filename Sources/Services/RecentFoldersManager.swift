@@ -33,12 +33,22 @@ struct RecentFolder: Identifiable, Codable {
     let bookmarkData: Data
     let dateOpened: Date
 
+    /// Creates a new recent folder entry
     init(url: URL, bookmarkData: Data) {
         self.id = UUID()
         self.name = url.lastPathComponent
         self.path = url.path
         self.bookmarkData = bookmarkData
         self.dateOpened = Date()
+    }
+
+    /// Creates a recent folder with all fields specified (used for in-place updates)
+    init(id: UUID, name: String, path: String, bookmarkData: Data, dateOpened: Date) {
+        self.id = id
+        self.name = name
+        self.path = path
+        self.bookmarkData = bookmarkData
+        self.dateOpened = dateOpened
     }
 }
 
@@ -129,12 +139,46 @@ final class RecentFoldersManager {
             return nil
         }
 
-        // If bookmark is stale, update it
+        // If bookmark is stale, refresh it in-place (preserves order)
         if isStale {
-            addFolder(url)
+            refreshStaleBookmark(folder, url: url)
         }
 
         return url
+    }
+
+    /// Refreshes a stale bookmark in-place without changing its position in the list.
+    /// - Parameters:
+    ///   - folder: The folder with the stale bookmark
+    ///   - url: The resolved URL to create a new bookmark from
+    private func refreshStaleBookmark(_ folder: RecentFolder, url: URL) {
+        // Create fresh bookmark data
+        guard let bookmarkData = try? url.bookmarkData(
+            options: .withSecurityScope,
+            includingResourceValuesForKeys: nil,
+            relativeTo: nil
+        ) else {
+            return
+        }
+
+        var folders = getRecentFolders()
+
+        // Find the folder by its ID and update its bookmark in-place
+        guard let index = folders.firstIndex(where: { $0.id == folder.id }) else {
+            return
+        }
+
+        // Create updated folder with same ID and dateOpened (preserves order)
+        let updatedFolder = RecentFolder(
+            id: folder.id,
+            name: folder.name,
+            path: folder.path,
+            bookmarkData: bookmarkData,
+            dateOpened: folder.dateOpened
+        )
+
+        folders[index] = updatedFolder
+        save(folders)
     }
 
     /// Clear all recent folders

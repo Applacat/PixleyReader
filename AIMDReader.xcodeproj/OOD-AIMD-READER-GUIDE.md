@@ -291,6 +291,48 @@ extension ContextEstimate {
 
 ---
 
+### Example 3: Tutorial Button - OOD in Action (NEW)
+
+**The Implementation:**
+```swift
+// In StartView.swift
+FolderShortcutButton(
+    title: "Show me the tutorial",
+    icon: "book.circle",
+    action: openWelcomeFolderWithPrompt
+)
+
+private func openWelcomeFolderWithPrompt() {
+    // ... setup welcome folder ...
+    
+    // OOD: Use existing infrastructure
+    // Same code path as manual interaction
+    appState.openWithFileContext(
+        fileURL: welcomeFile,
+        question: "What is this app and what can I do with it?"
+    )
+}
+```
+
+**Why This Is OOD:**
+- ✅ **No special "tutorial mode" code** - uses existing `openWithFileContext()`
+- ✅ **Same execution path** as if user manually: opened folder → selected file → typed question
+- ✅ **Self-describing button** - label clearly states what it does
+- ✅ **O(1) integration cost** - one button, one method call, leverages existing schema
+- ✅ **Demonstrates the pattern** - button is hardcoded, but execution flows through OOD infrastructure
+
+**The Pattern Validated:**
+This implementation proves the Wanderlust pattern works in AI.md Reader:
+1. **Schema defines capability** (`AppState.openWithFileContext` signature)
+2. **UI speaks schema's language** (passes fileURL + question)
+3. **No custom routing needed** - same `ChatView` handles both manual and button-triggered prompts
+4. **Human and AI converge** on same code path
+
+**Lessons from Wanderlust Applied:**
+Just like Wanderlust's "Edit Sheet handles both manual edits and AI edits," AI.md Reader's "ChatView handles both typed questions and button-triggered questions." The schema unifies all interaction modes.
+
+---
+
 ## Refactoring Roadmap (If Pursuing Pure OOD)
 
 ### Phase 1: Fix Documentation
@@ -439,10 +481,16 @@ if isRecentlyModified(item) { ... }
 
 ## Status
 
-**Current State:** Partial OOD adoption
+**Current State:** Partial OOD adoption with new demonstration
 - Strong patterns: `FolderItem`, `ContextEstimate`, `ChatMessage`
 - Mixed patterns: Services exist but some logic could move to objects
 - Opportunities: Consolidate duplicates, pull more logic IN
+- **NEW: Tutorial button demonstrates OOD pattern** - "Show me the tutorial" uses existing infrastructure (openWithFileContext) with no special wiring
+
+**Recent Changes (Feb 3, 2026):**
+- ✅ Added "Show me the tutorial" button to StartView - demonstrates OOD by reusing existing chat infrastructure
+- ✅ Fixed OOD comment in FolderService.swift (line 218) - now properly documents the pattern instead of describing algorithm
+- 📝 Understanding validated through Wanderlust 5-minute app example
 
 **This document:** Living reference for auditing and evolving the codebase toward purer OOD.
 

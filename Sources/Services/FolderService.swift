@@ -78,10 +78,42 @@ final class FolderService {
         }
     }
 
-    /// Invalidate cache for a specific folder (call before loading to ensure fresh data)
+    /// Invalidate cache for a specific folder and all its ancestors.
+    /// This ensures markdown counts stay accurate when files change in subfolders.
     func invalidateCache(for url: URL) {
-        cache.removeValue(forKey: url.path)
-        saveCacheToDisk()
+        var currentURL = url
+        var invalidatedCount = 0
+
+        // Invalidate the target folder
+        if cache.removeValue(forKey: currentURL.path) != nil {
+            invalidatedCount += 1
+        }
+
+        // Invalidate all ancestor folders (they contain stale markdown counts)
+        while true {
+            let parent = currentURL.deletingLastPathComponent()
+            // Stop at root or when we've gone too far
+            if parent.path == currentURL.path || parent.path == "/" {
+                break
+            }
+            if cache.removeValue(forKey: parent.path) != nil {
+                invalidatedCount += 1
+            }
+            currentURL = parent
+        }
+
+        if invalidatedCount > 0 {
+            logger.debug("Invalidated \(invalidatedCount) cache entries for \(url.lastPathComponent) and ancestors")
+            saveCacheToDisk()
+        }
+    }
+
+    /// Invalidate cache for a specific folder only, without affecting ancestors.
+    /// Use this for targeted invalidation when you know parent counts aren't affected.
+    func invalidateCacheForSingleFolder(at url: URL) {
+        if cache.removeValue(forKey: url.path) != nil {
+            saveCacheToDisk()
+        }
     }
 
     // MARK: - Load Tree

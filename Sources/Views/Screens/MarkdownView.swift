@@ -1,5 +1,14 @@
 import SwiftUI
 
+// MARK: - File Load Trigger
+
+/// Combines file selection and reload trigger into a single equatable value.
+/// Used with `.task(id:)` to avoid race conditions from separate task modifiers.
+private struct FileLoadTrigger: Equatable {
+    let file: URL?
+    let reload: Int
+}
+
 // MARK: - Markdown View
 
 /// The center panel displaying markdown content with syntax highlighting.
@@ -38,13 +47,8 @@ struct MarkdownView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
-        .task(id: appState.selectedFile) {
+        .task(id: FileLoadTrigger(file: appState.selectedFile, reload: appState.reloadTrigger)) {
             await loadFile()
-        }
-        .task(id: appState.reloadTrigger) {
-            if appState.reloadTrigger > 0 {
-                await loadFile()
-            }
         }
     }
 
@@ -100,7 +104,9 @@ struct MarkdownView: View {
     // MARK: - Markdown Content
 
     private var markdownContent: some View {
-        MarkdownEditor(text: .constant(content))
+        MarkdownEditor(text: .constant(content), onError: { error in
+            appState.showError(error)
+        })
     }
 
     // MARK: - Load File
@@ -134,6 +140,10 @@ struct MarkdownView: View {
 
             content = text
             appState.documentContent = text
+
+            // Notify any waiters that document has loaded
+            appState.onDocumentLoaded?()
+            appState.onDocumentLoaded = nil  // Clear after calling
         } catch let error as FileLoadError {
             errorMessage = error.localizedDescription
         } catch {

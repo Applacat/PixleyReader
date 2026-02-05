@@ -59,13 +59,6 @@ struct ContextEstimate: Sendable {
 @MainActor
 final class ChatService {
 
-    // MARK: - Constants
-
-    static let maxTokens = 4096
-    static let charsPerToken = 4
-    static let maxContextChars = maxTokens * charsPerToken  // ~16K chars
-    static let maxContextLength = 8000
-
     // MARK: - Context Estimation
 
     /// Calculate context estimate for the memory meter
@@ -76,23 +69,23 @@ final class ChatService {
         let hasHistory = !messages.isEmpty
 
         if hasHistory {
-            // Conversation mode: brief doc (2K) + chat history
-            let historyChars = messages.suffix(6).reduce(0) { $0 + $1.content.count }
-            let docChars = min(2000, documentLength)
-            let totalChars = docChars + historyChars + 200 // 200 for prompt overhead
+            // Conversation mode: brief doc + chat history
+            let historyChars = messages.suffix(ChatConfiguration.recentMessageCount).reduce(0) { $0 + $1.content.count }
+            let docChars = min(ChatConfiguration.conversationDocExcerpt, documentLength)
+            let totalChars = docChars + historyChars + ChatConfiguration.promptOverhead
             return ContextEstimate(
                 usedChars: totalChars,
-                maxChars: Self.maxContextChars,
+                maxChars: ChatConfiguration.maxContextChars,
                 mode: .conversation
             )
         } else {
             // Full document mode
-            let docChars = min(Self.maxContextLength, documentLength)
-            let totalChars = docChars + 200
+            let docChars = min(ChatConfiguration.maxContextLength, documentLength)
+            let totalChars = docChars + ChatConfiguration.promptOverhead
             return ContextEstimate(
                 usedChars: totalChars,
-                maxChars: Self.maxContextChars,
-                mode: documentLength > Self.maxContextLength ? .truncated : .fullDocument
+                maxChars: ChatConfiguration.maxContextChars,
+                mode: documentLength > ChatConfiguration.maxContextLength ? .truncated : .fullDocument
             )
         }
     }
@@ -101,10 +94,10 @@ final class ChatService {
 
     /// Truncate document if it exceeds max context length
     func truncateDocument(_ content: String) -> (text: String, wasTruncated: Bool) {
-        let wasTruncated = content.count > Self.maxContextLength
+        let wasTruncated = content.count > ChatConfiguration.maxContextLength
 
         if wasTruncated {
-            let truncated = String(content.prefix(Self.maxContextLength))
+            let truncated = String(content.prefix(ChatConfiguration.maxContextLength))
             return (truncated + "\n\n[... document truncated for length ...]", true)
         } else {
             return (content, false)
@@ -124,7 +117,7 @@ final class ChatService {
 
         if hasConversationHistory {
             // Include recent chat history for follow-up questions
-            let recentHistory = priorMessages.suffix(6) // Last 3 exchanges
+            let recentHistory = priorMessages.suffix(ChatConfiguration.recentMessageCount)
             let historyText = recentHistory.map { msg in
                 let role = msg.role == .user ? "User" : "Assistant"
                 return "\(role): \(msg.content)"
@@ -133,7 +126,7 @@ final class ChatService {
             return """
             Document context (for reference):
             ---
-            \(context.prefix(2000))...
+            \(context.prefix(ChatConfiguration.conversationDocExcerpt))...
             ---
 
             Previous conversation:

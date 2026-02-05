@@ -45,6 +45,14 @@ struct StartView: View {
                 isReady = true
             }
         }
+        .onChange(of: appState.shouldOpenBrowser) { _, shouldOpen in
+            // React to menu commands (Help, About) that request browser window
+            if shouldOpen {
+                appState.shouldOpenBrowser = false  // Consume the flag
+                openWindow(id: "browser")
+                dismissWindow(id: "start")
+            }
+        }
     }
 
     // MARK: - Launcher Content
@@ -64,6 +72,7 @@ struct StartView: View {
                             .frame(width: 140, height: 140)
                             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                             .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
+                            .accessibilityLabel("AI.md Reader app icon")
 
                         VStack(spacing: 4) {
                             Text("AI.md Reader")
@@ -156,37 +165,15 @@ struct StartView: View {
     // MARK: - Folder Actions
 
     private func openStandardFolder(_ directory: FileManager.SearchPathDirectory) {
-        guard let directoryURL = FileManager.default.urls(for: directory, in: .userDomainMask).first else {
-            return
-        }
-        
-        // Try to access directly with security-scoped bookmark
-        let key = "bookmark_\(directory.rawValue)"
-        
-        if let bookmarkData = UserDefaults.standard.data(forKey: key) {
-            var isStale = false
-            if let url = try? URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale),
-               !isStale {
-                // We have permission - open directly!
-                openFolder(url)
-                return
+        SecurityScopedBookmarkManager.shared.getOrRequestAccess(
+            to: directory,
+            onAccessGranted: { url in
+                self.openFolder(url)
+            },
+            onPermissionNeeded: { url in
+                self.showFolderPanel(for: directory, at: url)
             }
-        }
-        
-        // No permission yet - request it and open immediately
-        // Start accessing the directory to trigger permission request
-        if directoryURL.startAccessingSecurityScopedResource() {
-            // Permission granted! Save bookmark for next time
-            if let bookmarkData = try? directoryURL.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
-                UserDefaults.standard.set(bookmarkData, forKey: key)
-            }
-            
-            // Open immediately
-            openFolder(directoryURL)
-        } else {
-            // Permission denied - fall back to showing panel
-            showFolderPanel(for: directory, at: directoryURL)
-        }
+        )
     }
     
     #if os(macOS)
@@ -210,10 +197,8 @@ struct StartView: View {
         panel.begin { response in
             guard response == .OK, let selectedURL = panel.url else { return }
 
-            if let bookmarkData = try? selectedURL.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
-                let key = "bookmark_\(directory.rawValue)"
-                UserDefaults.standard.set(bookmarkData, forKey: key)
-            }
+            // Save bookmark via manager
+            SecurityScopedBookmarkManager.shared.saveBookmark(selectedURL, for: directory)
 
             self.openFolder(selectedURL)
         }

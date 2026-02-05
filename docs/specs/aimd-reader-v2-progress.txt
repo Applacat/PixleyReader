@@ -1,0 +1,108 @@
+# QoL Improvements v2 (OOD-Aligned) - Progress Tracker
+
+## Phase 1: Foundation Package
+- [COMPLETE] US-F1: Create aimdRenderer Package with DocumentModel
+- [COMPLETE] US-F2: Add AST Parsing with swift-markdown
+
+## Phase 1.5: Pre-Refactor Cleanup (HIGH Priority)
+- [PENDING] US-F2.1: Extract FolderTreeFilter Utility
+- [PENDING] US-F2.2: Extract SecurityScopedBookmarkManager
+- [PENDING] US-F2.3: Extract ChatInputValidator
+- [PENDING] US-F2.4: Create ChatConfiguration Enum
+- [PENDING] US-F2.5: Fix Async Document Coordination
+- [PENDING] US-F2.6: Add Status Bar Error UI
+
+## Phase 1.6: Tech Debt Cleanup (MEDIUM Priority, Optional)
+- [PENDING] US-F2.7: Fix MarkdownView Task Race Condition
+- [PENDING] US-F2.8: Fix NSTextViewDelegate Isolation
+- [PENDING] US-F2.9: Fix RecentFoldersManager Stale Bookmark Duplicate
+- [PENDING] US-F2.10: Fix FolderService Cache Invalidation
+
+## Phase 2: Foundation App
+- [PENDING] US-F3: Theme/Renderer Protocol System
+- [PENDING] US-F4: AppCoordinator and State Decomposition
+- [PENDING] US-F5: SettingsRepository Abstraction
+
+## Phase 3: Persistence
+- [PENDING] US-F6: FileMetadataRepository with SwiftData
+
+## Phase 4: Epic 1 - Settings & Customization
+- [PENDING] US-1.1: Settings Window Infrastructure
+- [PENDING] US-1.2: Appearance Settings Tab
+- [PENDING] US-1.3: Rendering Settings Tab
+- [PENDING] US-1.4: Behavior Settings Tab
+
+## Phase 5: Epic 2 - Search & Navigation
+- [PENDING] US-2.1: File Tree Filter
+- [PENDING] US-2.2: Content Search (Cmd+F)
+- [PENDING] US-2.3: Search Navigation (Cmd+G)
+- [PENDING] US-2.4: File Tree Keyboard Navigation
+- [PENDING] US-2.5: Quick Switcher (Cmd+P)
+
+## Phase 6: Epic 4 - Reading Experience
+- [PENDING] US-4.1: Reading Progress Persistence
+- [PENDING] US-4.2: Reading Progress Indicator
+- [PENDING] US-4.3: File Favorites
+- [PENDING] US-4.4: Line Bookmarks
+- [PENDING] US-4.5: File Watching
+
+---
+Generated: 2026-02-04
+Total Stories: 30
+Completed: 2
+
+## Key Architectural Decisions
+1. AppCoordinator pattern for state management
+2. aimdRenderer as local Swift Package
+3. Themes = Renderers (pluggable output strategies)
+4. SwiftData for persistence with FileMetadataRepository protocol
+5. Apple swift-markdown for AST parsing
+6. Split View deferred to applacatCanvas (v2.0/v3.0)
+7. Phase 1.5/1.6 inserted for audit fixes (2026-02-04)
+8. Async document coordination via callback on AppState
+9. Error display via status bar (hidden normally, slides up on error)
+
+## Phase 1 Completion Notes (2026-02-04)
+
+### US-F1: aimdRenderer Package with DocumentModel ✓
+- Created Swift Package at `Packages/aimdRenderer`
+- `DocumentModel` struct with `content: String`, `lines: [Line]`, `ast: MarkdownAST`
+- `Line` struct with `number: Int`, `range: Range<String.Index>`, `content: Substring`
+- Package builds successfully: `swift build` passes
+- Main app Package.swift updated to depend on aimdRenderer
+
+### US-F2: AST Parsing with swift-markdown ✓
+- swift-markdown (0.7.3) added as package dependency
+- `MarkdownAST` type wraps parsed document
+- Extracts: headings, code blocks, links, paragraphs with line numbers
+- `DocumentModel.ast` provides semantic access to markdown structure
+- Unit tests written (XCTest) for parsing validation
+
+### Package Structure
+```
+Packages/aimdRenderer/
+├── Package.swift
+├── Sources/aimdRenderer/
+│   ├── aimdRenderer.swift
+│   └── Models/
+│       ├── DocumentModel.swift
+│       ├── Line.swift
+│       └── MarkdownAST.swift
+└── Tests/aimdRendererTests/
+    └── DocumentModelTests.swift
+```
+
+## Phase 1.5 Notes (2026-02-04)
+
+Added based on SwiftUI Architecture Audit findings:
+- 6 HIGH priority issues identified
+- Each extraction requires 3+ unit tests
+- Prepares codebase for AppCoordinator refactor
+
+### Audit Sources
+- ContentView.swift:240-260 (tree filtering)
+- StartView.swift:167-199 (bookmark duplication)
+- ChatView.swift:372-400 (validation logic)
+- ChatView.swift:23,64-67 (scattered constants)
+- ChatView.swift:337-369 (polling pattern)
+- MarkdownEditor.swift:102-121 (silent errors)
