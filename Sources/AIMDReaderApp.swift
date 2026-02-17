@@ -25,20 +25,60 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else { return }
 
         if isDirectory.boolValue {
-            // Folder opened — browse it
+            // Folder opened — browse it (has security scope from Finder)
             RecentFoldersManager.shared.addFolder(url)
             coordinator.openFolder(url)
+            activateOrOpenBrowser(coordinator)
         } else {
             let ext = url.pathExtension.lowercased()
             guard ext == "md" || ext == "markdown" else { return }
-            // Markdown file — open parent folder and select file
-            let parentFolder = url.deletingLastPathComponent()
-            RecentFoldersManager.shared.addFolder(parentFolder)
-            coordinator.openFolder(parentFolder)
-            coordinator.selectFile(url)
+            // Markdown file — need security-scoped access to parent folder
+            openMarkdownFileWithFolderAccess(url, coordinator: coordinator)
+        }
+    }
+
+    /// Opens a markdown file by resolving sandbox access for its parent folder.
+    /// Checks for a cached bookmark first; falls back to NSOpenPanel if needed.
+    private func openMarkdownFileWithFolderAccess(_ fileURL: URL, coordinator: AppCoordinator) {
+        let parentFolder = fileURL.deletingLastPathComponent()
+        let parentPath = parentFolder.path
+
+        // Check if we already have a saved bookmark for this folder
+        if let savedFolder = RecentFoldersManager.shared.getRecentFolders()
+            .first(where: { $0.path == parentPath }),
+           let resolvedURL = RecentFoldersManager.shared.resolveBookmark(savedFolder) {
+            // Bookmark found — open silently
+            coordinator.openFolder(resolvedURL)
+            coordinator.selectFile(fileURL)
+            activateOrOpenBrowser(coordinator)
+            return
         }
 
-        // Activate existing browser window if one exists, otherwise request a new one
+        // No bookmark — ask user to grant folder access via NSOpenPanel
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.directoryURL = parentFolder
+        panel.message = "Grant access to this folder to browse its contents"
+        panel.prompt = "Open"
+
+        panel.begin { [weak coordinator] response in
+            guard response == .OK,
+                  let grantedURL = panel.url,
+                  let coordinator else { return }
+
+            Task { @MainActor in
+                RecentFoldersManager.shared.addFolder(grantedURL)
+                coordinator.openFolder(grantedURL)
+                coordinator.selectFile(fileURL)
+                self.activateOrOpenBrowser(coordinator)
+            }
+        }
+    }
+
+    /// Activates an existing browser window or requests a new one
+    private func activateOrOpenBrowser(_ coordinator: AppCoordinator) {
         if let browserWindow = NSApp.windows.first(where: {
             $0.identifier?.rawValue.contains("browser") == true && $0.isVisible
         }) {
