@@ -50,6 +50,39 @@ private struct FolderTreeFilter {
         }
     }
 
+    static func filterByName(_ items: [FolderItem], query: String) -> [FolderItem] {
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return items }
+
+        return items.compactMap { item in
+            if item.isFolder {
+                let filteredChildren = filterByName(item.children ?? [], query: trimmed)
+                if filteredChildren.isEmpty { return nil }
+                return FolderItem(
+                    url: item.url,
+                    isFolder: true,
+                    markdownCount: filteredChildren.reduce(0) { $0 + $1.markdownCount },
+                    children: filteredChildren
+                )
+            } else {
+                return item.name.localizedCaseInsensitiveContains(trimmed) ? item : nil
+            }
+        }
+    }
+
+    static func flattenMarkdownFiles(_ items: [FolderItem]) -> [FolderItem] {
+        var result: [FolderItem] = []
+        for item in items {
+            if item.isMarkdown {
+                result.append(item)
+            }
+            if let children = item.children {
+                result.append(contentsOf: flattenMarkdownFiles(children))
+            }
+        }
+        return result
+    }
+
     static func findFirstMarkdown(in items: [FolderItem]) -> FolderItem? {
         for item in items {
             if item.isMarkdown {
@@ -248,5 +281,127 @@ final class FolderTreeFilterTests: XCTestCase {
 
         // Then: Returns nil
         XCTAssertNil(result)
+    }
+
+    // MARK: - filterByName Tests
+
+    func testFilterByName_matchesPartialFilename() {
+        // Given: Files with various names
+        let items = [
+            makeFile("readme", isMarkdown: true),
+            makeFile("changelog", isMarkdown: true),
+            makeFile("config", isMarkdown: false)
+        ]
+
+        // When: Filter with partial match
+        let result = FolderTreeFilter.filterByName(items, query: "read")
+
+        // Then: Only matching file returned
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result[0].name, "readme.md")
+    }
+
+    func testFilterByName_caseInsensitive() {
+        // Given: File with mixed case name
+        let items = [
+            makeFile("README", isMarkdown: true),
+            makeFile("notes", isMarkdown: true)
+        ]
+
+        // When: Filter with lowercase query
+        let result = FolderTreeFilter.filterByName(items, query: "readme")
+
+        // Then: Matches regardless of case
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result[0].name, "README.md")
+    }
+
+    func testFilterByName_preservesParentFolders() {
+        // Given: Nested structure with matching file
+        let deepFile = makeFile("readme", isMarkdown: true)
+        let otherFile = makeFile("config", isMarkdown: false)
+        let folder = makeFolder("docs", children: [deepFile, otherFile])
+        let items = [folder]
+
+        // When: Filter for readme
+        let result = FolderTreeFilter.filterByName(items, query: "readme")
+
+        // Then: Parent folder preserved
+        XCTAssertEqual(result.count, 1)
+        XCTAssertTrue(result[0].isFolder)
+        XCTAssertEqual(result[0].children?.count, 1)
+        XCTAssertEqual(result[0].children?[0].name, "readme.md")
+    }
+
+    func testFilterByName_emptyQueryReturnsAll() {
+        // Given: Some files
+        let items = [
+            makeFile("readme", isMarkdown: true),
+            makeFile("notes", isMarkdown: true)
+        ]
+
+        // When: Filter with empty query
+        let result = FolderTreeFilter.filterByName(items, query: "")
+
+        // Then: All items returned unchanged
+        XCTAssertEqual(result.count, items.count)
+    }
+
+    func testFilterByName_noMatchesReturnsEmpty() {
+        // Given: Files that don't match
+        let items = [
+            makeFile("readme", isMarkdown: true),
+            makeFile("notes", isMarkdown: true)
+        ]
+
+        // When: Filter with non-matching query
+        let result = FolderTreeFilter.filterByName(items, query: "zebra")
+
+        // Then: Empty result
+        XCTAssertTrue(result.isEmpty)
+    }
+
+    // MARK: - flattenMarkdownFiles Tests
+
+    func testFlattenMarkdownFiles_returnsAllMarkdownFiles() {
+        // Given: Nested structure with markdown files
+        let file1 = makeFile("doc1", isMarkdown: true)
+        let file2 = makeFile("doc2", isMarkdown: true)
+        let txt = makeFile("config", isMarkdown: false)
+        let folder = makeFolder("docs", children: [file2, txt])
+        let items = [file1, folder]
+
+        // When: Flatten
+        let result = FolderTreeFilter.flattenMarkdownFiles(items)
+
+        // Then: All markdown files in depth-first order
+        XCTAssertEqual(result.count, 2)
+        XCTAssertEqual(result[0].name, "doc1.md")
+        XCTAssertEqual(result[1].name, "doc2.md")
+    }
+
+    func testFlattenMarkdownFiles_excludesFolders() {
+        // Given: Folders and files
+        let file = makeFile("readme", isMarkdown: true)
+        let folder = makeFolder("docs", children: [file])
+        let items = [folder]
+
+        // When: Flatten
+        let result = FolderTreeFilter.flattenMarkdownFiles(items)
+
+        // Then: Only files, no folders
+        XCTAssertEqual(result.count, 1)
+        XCTAssertFalse(result[0].isFolder)
+    }
+
+    func testFlattenMarkdownFiles_handlesEmptyTree() {
+        // Given: Empty tree
+        let items: [FolderItem] = []
+
+        // When: Flatten
+        let result = FolderTreeFilter.flattenMarkdownFiles(items)
+
+        // Then: Empty result
+        XCTAssertTrue(result.isEmpty)
     }
 }

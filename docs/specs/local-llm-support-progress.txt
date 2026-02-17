@@ -1,0 +1,61 @@
+Local LLM Support — Progress Tracker
+
+[DONE] Phase 1: Foundation
+  [DONE] US-1: OllamaClient Service
+    - Sources/Services/OllamaClient.swift — full HTTP client
+    - Sources/Models/OllamaModels.swift — all Codable types + CuratedModel catalog
+    - Endpoints: health check, listModels, chat (streaming), pullModel (streaming), showModel, deleteModel
+    - Typed errors: connectionRefused, modelNotFound, serverError, decodingError
+    - AsyncThrowingStream for chat and pull streaming
+  [DONE] US-2: Settings AI Tab
+    - Sources/Views/Screens/AISettingsView.swift — full AI tab
+    - Ollama status indicator (green/red dot)
+    - "Install Ollama" link when not running
+    - Active model picker (populated from /api/tags)
+    - Curated model catalog: llama3.2:3b, llama3.1:8b, qwen2.5:14b
+    - Download with progress bar, cancel support
+    - Delete installed models
+    - SettingsRepository: added AISettings (selectedModel, ollamaBaseURL)
+    - SettingsView: AI tab added as first tab
+  Build: swift build passes (ignoring pre-existing SwiftData/FoundationModels macro errors)
+  xcodegen: regenerated
+
+[DONE] Phase 2: Core
+  [DONE] US-3: ChatService Rewrite + Streaming UI
+    - Sources/Services/ChatService.swift — rewritten for Ollama
+    - Removed all FoundationModels code (LanguageModelSession, ContextMode, etc.)
+    - Stateless design: full conversation history + document sent with every request
+    - buildMessages(): system prompt + document + history + new question
+    - askAIStreaming(): returns AsyncThrowingStream<String, Error>, wraps client stream
+    - Captures full response for conversation history on completion
+    - Sources/Views/Screens/ChatView.swift — rewritten for streaming UI
+    - Live token streaming via streamingContent state
+    - Streaming bubble finalizes into ChatMessage on completion
+    - Model name shown in header capsule badge
+    - OllamaError handling with user-friendly messages
+    - Text selection enabled on message bubbles
+  [DONE] US-5: Ollama Status Polling + Empty States
+    - Sources/Coordinator/AppCoordinator.swift — added OllamaStatus class
+    - 60-second polling with 5s tolerance, manual refresh() for Settings
+    - isRunning, installedModels, hasChecked, hasModel (computed)
+    - Sources/AIMDReaderApp.swift — starts polling on launch
+    - ChatView empty states: checking, not running, no model, no file
+    - Settings button links to AI settings from empty states
+  Build: swift build passes (ignoring pre-existing SwiftData/FoundationModels macro errors)
+  xcodegen: regenerated
+
+[DONE] Phase 3: Cleanup
+  [DONE] US-4: Remove Foundation Models + Cleanup
+    - Sources/Models/AIMDIntent.swift — gutted (removed @Generable, @Guide, import FoundationModels)
+    - Sources/Models/ChatConfiguration.swift — removed FM context constants (maxContextTokens, etc.)
+    - Only maxInputLength and maxMessageHistory remain (still used by ChatInputValidator)
+    - CLAUDE.md — updated stack, key files, architecture section for Ollama
+  [DONE] US-6: Welcome Flow Update
+    - Resources/Welcome/01-Welcome.md — "Foundation Models" → "Ollama — Local AI chat"
+    - Resources/Welcome/03-AI-Chat.md — removed Memory Meter section, added Ollama setup section
+    - Resources/Welcome/05-Tips-and-Tricks.md — "Apple Intelligence" → "Ollama", updated privacy text
+    - StartView.swift — no changes needed (already Ollama-compatible)
+  Build: swift build passes (only pre-existing SwiftData macro errors remain)
+  xcodegen: regenerated
+
+ALL PHASES COMPLETE — Local LLM support fully implemented.

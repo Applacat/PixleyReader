@@ -130,7 +130,7 @@ final class FolderServiceCacheTests: XCTestCase {
     // MARK: - Ancestor Invalidation Tests
 
     @MainActor
-    func testInvalidateCache_deepNesting_invalidatesAllAncestors() {
+    func testInvalidateCache_deepNesting_invalidatesAllAncestors() throws {
         // Given: Deep folder hierarchy
         let paths = [
             "/Users/test",
@@ -146,7 +146,8 @@ final class FolderServiceCacheTests: XCTestCase {
         }
 
         // When: Invalidate deepest folder
-        let deepest = URL(fileURLWithPath: paths.last!)
+        let deepestPath = try XCTUnwrap(paths.last)
+        let deepest = URL(fileURLWithPath: deepestPath)
         manager.invalidateCache(for: deepest)
 
         // Then: ALL ancestors invalidated

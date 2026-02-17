@@ -43,8 +43,8 @@
 
 | File | Status | Notes |
 |------|--------|-------|
-| `CLAUDE.md` | CURRENT | Updated 2026-02-02 - Swift 6.2, native UI refactor |
-| `cal/cal.md` | CURRENT | Updated 2026-02-02 - native UI refactor documented |
+| `CLAUDE.md` | CURRENT | Updated 2026-02-02 - Swift 6.2, native UI refactor, Recents feature |
+| `cal/cal.md` | CURRENT | Updated 2026-02-02 - native UI refactor, Recents feature |
 | `cal/agent-prompts.md` | UNKNOWN | Need to verify agents are current |
 
 ---

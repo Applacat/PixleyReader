@@ -1,0 +1,33 @@
+OOD Wizard Recommendations — Progress Tracker
+
+[DONE] US-2: Extract Welcome Folder Logic
+  - Created WelcomeManager.swift (Sources/Services/)
+  - Removed duplicated code from AIMDReaderApp.swift and StartView.swift
+
+[DONE] US-5: Error Auto-Dismiss to View .task
+  - Removed dismissTask/[weak self] from UIState
+  - Added .task(id: currentError) auto-dismiss in ErrorBannerOverlay
+
+[DONE] US-1: DocumentState as File-Loading Authority
+  - DocumentState now owns loadFile(url:) with async file I/O
+  - Added isLoading, errorMessage properties to DocumentState
+  - Removed @State content, isLoading, errorMessage from MarkdownView
+  - MarkdownView reads from coordinator.document.content
+  - Moved FileLoadError to AppCoordinator.swift
+  - Added loadDocument() to AppCoordinator
+
+[DONE] US-3: Settings Containers as Pure Data
+  - AppearanceSettings, RenderingSettings, BehaviorSettings are now pure @Observable with defaults only
+  - All UserDefaults read/write moved to UserDefaultsSettingsRepository
+  - Repository uses withObservationTracking to auto-persist changes
+  - Injectable UserDefaults instance (defaults: parameter)
+
+[DONE] US-4: All Mutations Through Coordinator
+  - State container properties: private(set) or internal(set)
+  - Added coordinator methods: setFirstLaunchWelcome, setSidebarFilter, setDisplayItems,
+    requestOpenBrowser, consumeOpenBrowser, consumeInitialChatQuestion
+  - Added computed bindings: sidebarFilterQuery, isAIChatVisible
+  - Updated all views to use coordinator methods instead of direct property access
+  - Zero direct property assignments from views (verified by grep)
+
+Verification: swift build passes (only pre-existing SwiftData/FoundationModels macro errors remain)

@@ -1,0 +1,57 @@
+{
+  "feature": "OOD Wizard Recommendations Implementation",
+  "slug": "to-implement-these-recs-but-idk-how",
+  "date": "2026-02-05",
+  "source": "scratch/audit-ood-wizard-2026-02-05.md",
+  "scope": "5 fixes from 10 audit findings",
+  "stories": [
+    {
+      "id": "US-1",
+      "title": "DocumentState as File-Loading Authority",
+      "priority": "high",
+      "files": ["DocumentState.swift", "MarkdownView.swift", "AppCoordinator.swift"],
+      "status": "pending"
+    },
+    {
+      "id": "US-2",
+      "title": "Extract Welcome Folder Logic",
+      "priority": "high",
+      "files": ["AIMDReaderApp.swift", "StartView.swift", "WelcomeManager.swift (new)"],
+      "status": "pending"
+    },
+    {
+      "id": "US-3",
+      "title": "Settings Containers as Pure Data",
+      "priority": "high",
+      "files": ["SettingsRepository.swift", "AppearanceSettings", "RenderingSettings", "BehaviorSettings"],
+      "status": "pending"
+    },
+    {
+      "id": "US-4",
+      "title": "All Mutations Through Coordinator",
+      "priority": "medium",
+      "files": ["AppCoordinator.swift", "NavigationState.swift", "UIState.swift", "DocumentState.swift", "all view files"],
+      "status": "pending"
+    },
+    {
+      "id": "US-5",
+      "title": "Error Auto-Dismiss to View .task",
+      "priority": "low",
+      "files": ["UIState.swift", "error-displaying view"],
+      "status": "pending"
+    }
+  ],
+  "skipped": [
+    {"id": 5, "finding": "Singleton services bypass coordinator", "reason": "No tests planned"},
+    {"id": 6, "finding": "SettingsRepository protocol unused", "reason": "Keep as-is"},
+    {"id": 8, "finding": "NavigationState security scope", "reason": "Pragmatic for macOS"},
+    {"id": 9, "finding": "FolderItem as NSOutlineView items", "reason": "Known cost"},
+    {"id": 10, "finding": "ChatView creates ChatService inline", "reason": "Fresh chat acceptable"}
+  ],
+  "implementation": {
+    "approach": "single-pass",
+    "order": ["US-2", "US-5", "US-1", "US-3", "US-4"],
+    "coordinator_api_style": "semantic-methods",
+    "verification": "swift build + manual smoke test after each story"
+  }
+}

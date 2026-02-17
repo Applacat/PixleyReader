@@ -1,6 +1,15 @@
 import XCTest
 import Foundation
 
+// MARK: - Test Helpers
+
+extension String {
+    /// Safely convert string to Data for tests - returns empty Data if conversion fails
+    var testData: Data {
+        data(using: .utf8) ?? Data()
+    }
+}
+
 // MARK: - Test-Only Type Definition
 // Since SecurityScopedBookmarkManager is in the main app (executable target),
 // we mirror the implementation here for testing the logic.
@@ -87,7 +96,7 @@ final class SecurityScopedBookmarkManagerTests: XCTestCase {
     func testSaveBookmark_storesData() {
         // Given: Bookmark data
         let directory = FileManager.SearchPathDirectory.downloadsDirectory
-        let testData = "test_bookmark_data".data(using: .utf8)!
+        let testData = "test_bookmark_data".testData
 
         // When: Save bookmark
         manager.saveBookmark(testData, for: directory)
@@ -115,7 +124,7 @@ final class SecurityScopedBookmarkManagerTests: XCTestCase {
     func testClearBookmark_removesData() {
         // Given: Saved bookmark
         let directory = FileManager.SearchPathDirectory.documentDirectory
-        let testData = "test_data".data(using: .utf8)!
+        let testData = "test_data".testData
         manager.saveBookmark(testData, for: directory)
 
         // When: Clear bookmark
@@ -130,8 +139,8 @@ final class SecurityScopedBookmarkManagerTests: XCTestCase {
         // Given: Multiple bookmarks
         let desktop = FileManager.SearchPathDirectory.desktopDirectory
         let documents = FileManager.SearchPathDirectory.documentDirectory
-        manager.saveBookmark("desktop".data(using: .utf8)!, for: desktop)
-        manager.saveBookmark("documents".data(using: .utf8)!, for: documents)
+        manager.saveBookmark("desktop".testData, for: desktop)
+        manager.saveBookmark("documents".testData, for: documents)
 
         // When: Clear only desktop
         manager.clearBookmark(for: desktop)
@@ -147,7 +156,7 @@ final class SecurityScopedBookmarkManagerTests: XCTestCase {
     func testHasBookmark_returnsTrueWhenBookmarkExists() {
         // Given: Saved bookmark
         let directory = FileManager.SearchPathDirectory.downloadsDirectory
-        manager.saveBookmark("data".data(using: .utf8)!, for: directory)
+        manager.saveBookmark("data".testData, for: directory)
 
         // When: Check access
         let hasAccess = manager.hasBookmark(for: directory)
@@ -174,10 +183,10 @@ final class SecurityScopedBookmarkManagerTests: XCTestCase {
     func testSaveBookmark_overwritesPreviousBookmark() {
         // Given: Existing bookmark
         let directory = FileManager.SearchPathDirectory.documentDirectory
-        manager.saveBookmark("old_data".data(using: .utf8)!, for: directory)
+        manager.saveBookmark("old_data".testData, for: directory)
 
         // When: Save new bookmark
-        let newData = "new_data".data(using: .utf8)!
+        let newData = "new_data".testData
         manager.saveBookmark(newData, for: directory)
 
         // Then: New data is stored

@@ -13,9 +13,9 @@ Read markdown files elegantly. Browse folder hierarchies, view with syntax highl
 - Swift 6.2
 - SwiftUI
 - macOS 26 (Tahoe) - Apple Silicon only
-- Apple Foundation Models (on-device AI)
+- Apple Foundation Models (on-device LLM via LanguageModelSession)
 - No external dependencies
-- No persistence (open folder each session)
+- SwiftData for file metadata persistence
 
 ## Current State
 
@@ -26,7 +26,7 @@ Read markdown files elegantly. Browse folder hierarchies, view with syntax highl
 NavigationSplitView layout:
 1. **FileBrowserSidebar** (sidebar) - Hierarchical tree with tap-to-expand folders
 2. **MarkdownView** (detail) - Syntax-highlighted markdown viewer
-3. **ChatView** (inspector) - On-device AI chat about current document
+3. **ChatView** (inspector) - AI chat about current document (via Foundation Models)
 
 ### Launch Behavior
 
@@ -40,35 +40,33 @@ NavigationSplitView layout:
 **Models:**
 - `FolderItem.swift` - File/folder with `children: [FolderItem]?` for hierarchy
 - `ChatMessage.swift` - AI chat message model
-- `AIMDIntent.swift` - Structured AI intent parsing
+- `ChatConfiguration.swift` - FM constants (document cap, turn limit, timeout)
 
 **Services:**
 - `FolderService.swift` - Loads full folder tree recursively via `loadTree()`
 - `RecentFoldersManager.swift` - Recent folders + files tracking with security-scoped bookmarks
+- `ChatService.swift` - AI chat using Foundation Models with session management, timeout, auto-reset
 
 **Views:**
-- `AIMDReaderApp.swift` - App entry, AppState (simplified, no navigationPath)
+- `AIMDReaderApp.swift` - App entry, launch behavior
 - `ContentView.swift` - BrowserView with NavigationSplitView, FileBrowserSidebar, FileRowView
 - `StartView.swift` - Pixelmator-style welcome with FolderShortcutButton, RecentItemButton (folders + files)
 - `MarkdownView.swift` - Markdown viewer with reload pill
-- `ChatView.swift` - AI chat using Foundation Models
-- `AITestView.swift` - Foundation Models testing
+- `ChatView.swift` - AI chat with "Thinking..." indicator + full response display
 
 **Resources:**
 - `Assets.xcassets` - App assets including AIMD mascot
 
-## Apple Foundation Models (2026 API)
+## Foundation Models Integration
 
-```swift
-import FoundationModels
-
-// Check availability
-guard SystemLanguageModel.default.availability == .available else { return }
-
-// Basic usage
-let session = LanguageModelSession(instructions: "Your system prompt")
-let response = try await session.respond(to: userPrompt)
-```
+AI chat uses Apple's on-device Foundation Models framework:
+- `LanguageModelSession` with instructions containing truncated document (~2500 chars)
+- `respond(to:)` for plain text Q&A (no streaming without @Generable)
+- Catches all `GenerationError` types: `exceededContextWindowSize`, `guardrailViolation`, `unsupportedLanguageOrLocale`
+- 30-second timeout wrapper prevents hangs
+- Auto-resets session after 3 Q&A turns to stay within 4096-token context window
+- Fresh session per "Forget" reset
+- Availability check via `SystemLanguageModel.default.availability`
 
 ## Architecture Rules
 

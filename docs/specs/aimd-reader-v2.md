@@ -260,7 +260,7 @@ Future: `applacatCanvas` package will consume aimdRenderer blocks for multi-bloc
 - [x] `UIState`: `isAIChatVisible`, panel visibility flags
 - [x] `DocumentState`: `documentModel: DocumentModel`, `fileHasChanges`, `reloadTrigger`
 - [x] Old `AppState` kept for backward compatibility (marked for future deprecation)
-- [ ] All views updated to use new state containers via Environment (gradual migration)
+- [x] All views updated to use new state containers via Environment (gradual migration)
 - [x] App launches and functions as before
 
 **Implementation:** `Sources/Coordinator/AppCoordinator.swift`
@@ -284,20 +284,22 @@ Future: `applacatCanvas` package will consume aimdRenderer blocks for multi-bloc
 
 ---
 
-## Phase 3: Persistence
+## Phase 3: Persistence (COMPLETE)
 
 ### US-F6: FileMetadataRepository with SwiftData
 
 **Description:** Create persistence layer for reading state using SwiftData.
 
 **Acceptance Criteria:**
-- [ ] `FileMetadataRepository` protocol defined
-- [ ] `FileMetadata` SwiftData model: fileURL, scrollPosition, isFavorite, lastOpened
-- [ ] `Bookmark` SwiftData model: fileURL, lineNumber, note (optional)
-- [ ] `SwiftDataMetadataRepository` implementation
-- [ ] Can save and retrieve scroll position for a file
-- [ ] Can mark file as favorite and retrieve favorites list
-- [ ] Can create and retrieve bookmarks for a file
+- [x] `FileMetadataRepository` protocol defined
+- [x] `FileMetadata` SwiftData model: fileURL, scrollPosition, isFavorite, lastOpened
+- [x] `Bookmark` SwiftData model: fileURL, lineNumber, note (optional)
+- [x] `SwiftDataMetadataRepository` implementation
+- [x] Can save and retrieve scroll position for a file
+- [x] Can mark file as favorite and retrieve favorites list
+- [x] Can create and retrieve bookmarks for a file
+
+**Implementation:** `Sources/Persistence/`
 
 ---
 
@@ -581,7 +583,7 @@ xcodebuild -scheme AIMDReader build
 - US-F5: SettingsRepository
 - **Verification:** App builds and launches, existing features work
 
-### Phase 3: Persistence
+### Phase 3: Persistence (COMPLETE)
 - US-F6: FileMetadataRepository with SwiftData
 - **Verification:** Can save/retrieve test metadata
 

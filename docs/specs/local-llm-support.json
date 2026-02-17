@@ -1,0 +1,38 @@
+{
+  "feature": "Local LLM Support",
+  "slug": "local-llm-support",
+  "date": "2026-02-05",
+  "status": "ready",
+  "summary": "Replace Foundation Models with Ollama for AI Chat. Build OllamaClient HTTP service, Settings AI tab with model management, streaming chat UI, and remove all FM code.",
+  "decisions": {
+    "backend": "Ollama (localhost:11434)",
+    "fm_removal": "complete",
+    "model_choice": "user picks from curated small/medium/large list",
+    "streaming": true,
+    "document_context": "send full document with every message",
+    "persistence": "none (fresh each session)",
+    "client": "URLSession from scratch, no dependencies",
+    "detection": "lightweight poll every 60s",
+    "settings_tab": "full AI tab with status, model download, picker",
+    "welcome_flow": "open folder only, no auto-chat"
+  },
+  "models": {
+    "small": "llama3.2:3b",
+    "medium": "llama3.1:8b",
+    "large": "qwen2.5:14b"
+  },
+  "stories": [
+    {"id": "US-1", "title": "OllamaClient Service", "phase": 1},
+    {"id": "US-2", "title": "Settings AI Tab", "phase": 1},
+    {"id": "US-3", "title": "ChatService Rewrite + Streaming UI", "phase": 2},
+    {"id": "US-4", "title": "Remove Foundation Models + Cleanup", "phase": 3},
+    {"id": "US-5", "title": "Ollama Status Polling + Empty States", "phase": 2},
+    {"id": "US-6", "title": "Welcome Flow Update", "phase": 3}
+  ],
+  "phases": [
+    {"number": 1, "name": "Foundation", "stories": ["US-1", "US-2"]},
+    {"number": 2, "name": "Core", "stories": ["US-3", "US-5"]},
+    {"number": 3, "name": "Cleanup", "stories": ["US-4", "US-6"]}
+  ],
+  "spec_file": "docs/specs/local-llm-support.md"
+}
