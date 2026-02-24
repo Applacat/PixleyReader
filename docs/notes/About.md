@@ -1,13 +1,13 @@
-# About AI.md Reader
+# About Pixley Markdown Reader
 
 **Version 1.0**  
 A native macOS app for reading markdown files with style.
 
 ---
 
-## What is AI.md Reader?
+## What is Pixley Markdown Reader?
 
-AI.md Reader is a lightweight, fast, and beautiful markdown viewer for macOS. It's designed to help you read AI-generated markdown files, documentation, notes, and any `.md` files with ease.
+Pixley Markdown Reader is a lightweight, fast, and beautiful markdown viewer for macOS. It's designed to help you read AI-generated markdown files, documentation, notes, and any `.md` files with ease.
 
 ### Key Features
 
@@ -49,7 +49,7 @@ All markdown highlighting code was written in-house using Swift and AppKit's NST
 
 ### Design Philosophy
 
-AI.md Reader follows these principles:
+Pixley Markdown Reader follows these principles:
 
 1. **Native First** — Built with Apple's frameworks for the best macOS experience
 2. **Performance Matters** — Debounced highlighting, size limits, efficient caching
@@ -60,7 +60,7 @@ AI.md Reader follows these principles:
 
 ## Open Source
 
-AI.md Reader is built with love for the markdown community. We believe in:
+Pixley Markdown Reader is built with love for the markdown community. We believe in:
 
 - ✅ Native apps over web wrappers
 - ✅ Privacy over data collection
@@ -94,7 +94,7 @@ AI.md Reader is built with love for the markdown community. We believe in:
 
 Need help? Here's how to get support:
 
-- **Help Menu** → AI.md Reader Help
+- **Help Menu** → Pixley Markdown Reader Help
 - **Report Bugs** → Help Menu → Report a Bug
 - **Documentation** → Browse the Welcome folder files
 
@@ -102,7 +102,7 @@ Need help? Here's how to get support:
 
 ## Privacy Policy
 
-AI.md Reader **does not collect any data**. Your files stay on your device. The app requests permission to access:
+Pixley Markdown Reader **does not collect any data**. Your files stay on your device. The app requests permission to access:
 
 - Folders you explicitly choose
 - System folders (Desktop, Documents, Downloads) only with your permission
@@ -113,7 +113,7 @@ All file access uses macOS security-scoped bookmarks and follows Apple's sandbox
 
 ## Legal
 
-© 2026 AI.md Reader  
+© 2026 Pixley Markdown Reader  
 All rights reserved.
 
 Markdown syntax highlighting implementation is original work.  

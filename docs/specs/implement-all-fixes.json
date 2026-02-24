@@ -1,0 +1,185 @@
+{
+  "name": "Implement All Audit Fixes",
+  "version": "2.0-pre-release",
+  "created": "2026-02-23",
+  "status": "PENDING",
+  "source": "6 pre-release audits (concurrency, memory, swiftui-performance, swiftui-architecture, storage, accessibility)",
+  "total_raw_issues": 60,
+  "already_fixed": 2,
+  "no_action_needed": 4,
+  "remaining_fixes": 54,
+  "phases": [
+    {
+      "id": 1,
+      "name": "Infrastructure & Storage",
+      "risk": "HIGH",
+      "stories": ["US-1", "US-2", "US-3", "US-4"],
+      "changes": 13
+    },
+    {
+      "id": 2,
+      "name": "AppKit Bridging & Memory",
+      "risk": "HIGH",
+      "stories": ["US-5", "US-6", "US-7"],
+      "changes": 11
+    },
+    {
+      "id": 3,
+      "name": "App-Level Fixes",
+      "risk": "MEDIUM",
+      "stories": ["US-8", "US-9", "US-10"],
+      "changes": 12
+    },
+    {
+      "id": 4,
+      "name": "Accessibility & Chat",
+      "risk": "MEDIUM",
+      "stories": ["US-11", "US-12", "US-13"],
+      "changes": 8
+    },
+    {
+      "id": 5,
+      "name": "Polish & Documentation",
+      "risk": "LOW",
+      "stories": ["US-14", "US-15"],
+      "changes": 11
+    },
+    {
+      "id": 6,
+      "name": "Build Verification",
+      "risk": "NONE",
+      "stories": ["US-16"],
+      "changes": 1
+    }
+  ],
+  "stories": [
+    {
+      "id": "US-1",
+      "title": "Fix FolderService.swift",
+      "file": "Sources/Services/FolderService.swift",
+      "audit_refs": ["CONC-H3", "CONC-H4", "PERF-M3", "STOR-H2", "MEM-M4"],
+      "changes": 5,
+      "phase": 1
+    },
+    {
+      "id": "US-2",
+      "title": "Fix SwiftDataMetadataRepository.swift",
+      "file": "Sources/Persistence/SwiftDataMetadataRepository.swift",
+      "audit_refs": ["CONC-H2", "STOR-H4"],
+      "changes": 2,
+      "phase": 1
+    },
+    {
+      "id": "US-3",
+      "title": "Migrate SecurityScopedBookmarkManager to File Storage",
+      "file": "Sources/Services/SecurityScopedBookmarkManager.swift",
+      "audit_refs": ["STOR-H1", "STOR-M2"],
+      "changes": 3,
+      "phase": 1
+    },
+    {
+      "id": "US-4",
+      "title": "Migrate RecentFoldersManager to File Storage",
+      "file": "Sources/Services/RecentFoldersManager.swift",
+      "audit_refs": ["STOR-H3", "STOR-M1"],
+      "changes": 3,
+      "phase": 1
+    },
+    {
+      "id": "US-5",
+      "title": "Fix MarkdownEditor.swift",
+      "file": "Sources/MarkdownEditor.swift",
+      "audit_refs": ["CONC-H1", "MEM-H2", "MEM-M5", "ACC-M3", "PERF-L1"],
+      "changes": 4,
+      "phase": 2
+    },
+    {
+      "id": "US-6",
+      "title": "Fix OutlineFileList.swift",
+      "file": "Sources/Views/Components/OutlineFileList.swift",
+      "audit_refs": ["PERF-H3", "MEM-M3", "ACC-M5", "ACC-M6"],
+      "changes": 4,
+      "phase": 2
+    },
+    {
+      "id": "US-7",
+      "title": "Fix MarkdownView.swift",
+      "file": "Sources/Views/Screens/MarkdownView.swift",
+      "audit_refs": ["MEM-H1", "PERF-M1", "PERF-M2"],
+      "changes": 3,
+      "phase": 2
+    },
+    {
+      "id": "US-8",
+      "title": "Fix AIMDReaderApp.swift",
+      "file": "Sources/AIMDReaderApp.swift",
+      "audit_refs": ["CONC-M1", "CONC-M2", "MEM-L6", "MEM-M4"],
+      "changes": 3,
+      "phase": 3
+    },
+    {
+      "id": "US-9",
+      "title": "Fix ContentView.swift",
+      "file": "Sources/ContentView.swift",
+      "audit_refs": ["PERF-H1", "PERF-H2", "ACC-H1", "ACC-H2", "ACC-L1"],
+      "changes": 5,
+      "phase": 3
+    },
+    {
+      "id": "US-10",
+      "title": "Fix QuickSwitcher.swift",
+      "file": "Sources/Views/Components/QuickSwitcher.swift",
+      "audit_refs": ["ARCH-M1", "PERF-M4", "ARCH-L6", "ACC-M2", "ACC-M1"],
+      "changes": 4,
+      "phase": 3
+    },
+    {
+      "id": "US-11",
+      "title": "Fix ChatView.swift",
+      "file": "Sources/Views/Screens/ChatView.swift",
+      "audit_refs": ["ACC-H3", "ACC-H4", "ACC-L3"],
+      "changes": 3,
+      "phase": 4
+    },
+    {
+      "id": "US-12",
+      "title": "Fix ChatService.swift",
+      "file": "Sources/Services/ChatService.swift",
+      "audit_refs": ["CONC-M3", "ARCH-M5"],
+      "changes": 2,
+      "phase": 4
+    },
+    {
+      "id": "US-13",
+      "title": "Fix StartView.swift",
+      "file": "Sources/Views/Screens/StartView.swift",
+      "audit_refs": ["CONC-M1", "PERF-M2", "ACC-M1"],
+      "changes": 3,
+      "phase": 4
+    },
+    {
+      "id": "US-14",
+      "title": "Fix Settings & UI Polish Files",
+      "files": ["Sources/Views/Screens/SettingsView.swift", "Sources/Settings/SettingsRepository.swift", "Sources/Views/Components/ErrorBanner.swift"],
+      "audit_refs": ["ACC-M7", "ACC-L2", "ACC-M1", "CONC-L1", "ARCH-M2", "ARCH-M4", "PERF-M2", "ARCH-L7"],
+      "changes": 6,
+      "phase": 5
+    },
+    {
+      "id": "US-15",
+      "title": "Fix Model & Documentation Files",
+      "files": ["Sources/Models/FolderItem.swift", "Sources/Coordinator/AppCoordinator.swift", "Sources/Views/Components/LineNumberRulerView.swift", "Sources/Services/WelcomeManager.swift", "Sources/Services/FolderTreeFilter.swift"],
+      "audit_refs": ["CONC-L2", "CONC-L1", "ACC-M4", "STOR-L1", "PERF-M5"],
+      "changes": 5,
+      "phase": 5
+    },
+    {
+      "id": "US-16",
+      "title": "Full Build Verification",
+      "file": null,
+      "audit_refs": [],
+      "changes": 1,
+      "phase": 6
+    }
+  ]
+}

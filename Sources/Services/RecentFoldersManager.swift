@@ -1,4 +1,7 @@
 import Foundation
+import os.log
+
+private let log = Logger(subsystem: "com.aimd.reader", category: "RecentFoldersManager")
 
 // MARK: - Recent Item
 
@@ -55,26 +58,105 @@ struct RecentFolder: Identifiable, Codable {
 // MARK: - Recent Folders Manager
 
 /// Manages recently opened folders with security-scoped bookmarks.
-/// Bookmarks allow the app to regain access to folders across launches.
+/// Data stored as JSON files in Application Support/AIMDReader/.
+/// Migrates legacy UserDefaults data on first access.
 @MainActor
 final class RecentFoldersManager {
 
     static let shared = RecentFoldersManager()
 
     private let maxRecents = 10
-    private let userDefaultsKey = "recentFolders"
+    private let maxRecentFiles = 4
+
+    // Legacy UserDefaults keys (for migration)
+    private let legacyFoldersKey = "recentFolders"
+    private let legacyFilesKey = "recentFiles"
+
+    // In-memory caches — loaded once from disk, invalidated on mutation
+    private var cachedFolders: [RecentFolder]?
+    private var cachedFiles: [RecentItem]?
 
     private init() {}
 
+    // MARK: - Storage Paths
+
+    private var storageDirectory: URL? {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("AIMDReader")
+    }
+
+    private var recentFoldersFileURL: URL? {
+        storageDirectory?.appendingPathComponent("RecentFolders.json")
+    }
+
+    private var recentFilesFileURL: URL? {
+        storageDirectory?.appendingPathComponent("RecentFiles.json")
+    }
+
+    /// Ensures the storage directory exists and writes data with protection.
+    private func writeToFile(_ data: Data, at url: URL) {
+        let dir = url.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+
+        // Set backup exclusion before write (effective if file already exists)
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        var mutableURL = url
+        try? mutableURL.setResourceValues(resourceValues)
+
+        do {
+            try data.write(to: url, options: [.atomic, .completeFileProtection])
+        } catch {
+            log.error("Failed to write to \(url.lastPathComponent): \(error.localizedDescription)")
+            return
+        }
+
+        // Re-apply backup exclusion for newly created files
+        try? mutableURL.setResourceValues(resourceValues)
+    }
+
     // MARK: - Public API
 
-    /// Get list of recent folders, sorted by most recently opened
+    /// Get list of recent folders, sorted by most recently opened.
+    /// Uses in-memory cache after first load to avoid repeated disk I/O on @MainActor.
     func getRecentFolders() -> [RecentFolder] {
-        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
-              let folders = try? JSONDecoder().decode([RecentFolder].self, from: data) else {
-            return []
+        if let cached = cachedFolders { return cached }
+
+        let loaded = loadFoldersFromDisk()
+        cachedFolders = loaded
+        return loaded
+    }
+
+    /// Loads folders from disk (called once per app session, or after cache invalidation).
+    private func loadFoldersFromDisk() -> [RecentFolder] {
+        // Try file storage first
+        if let fileURL = recentFoldersFileURL,
+           let data = try? Data(contentsOf: fileURL) {
+            do {
+                let folders = try JSONDecoder().decode([RecentFolder].self, from: data)
+                return folders.sorted { $0.dateOpened > $1.dateOpened }
+            } catch {
+                log.error("Failed to decode RecentFolders.json: \(error.localizedDescription)")
+                try? FileManager.default.removeItem(at: fileURL)
+                return []
+            }
         }
-        return folders.sorted { $0.dateOpened > $1.dateOpened }
+
+        // Try legacy UserDefaults migration
+        if let data = UserDefaults.standard.data(forKey: legacyFoldersKey) {
+            do {
+                let folders = try JSONDecoder().decode([RecentFolder].self, from: data)
+                saveFolders(folders)
+                UserDefaults.standard.removeObject(forKey: legacyFoldersKey)
+                log.info("Migrated \(folders.count) recent folders from UserDefaults to file storage")
+                return folders.sorted { $0.dateOpened > $1.dateOpened }
+            } catch {
+                log.error("Failed to decode legacy recent folders: \(error.localizedDescription)")
+                UserDefaults.standard.removeObject(forKey: legacyFoldersKey)
+            }
+        }
+
+        return []
     }
 
     /// Add a folder to recents (creates security-scoped bookmark)
@@ -103,21 +185,21 @@ final class RecentFoldersManager {
             folders = Array(folders.prefix(maxRecents))
         }
 
-        save(folders)
+        saveFolders(folders)
     }
 
     /// Remove a folder from recents
     func removeFolder(_ folder: RecentFolder) {
         var folders = getRecentFolders()
         folders.removeAll { $0.id == folder.id }
-        save(folders)
+        saveFolders(folders)
     }
 
     /// Remove a folder from recents by path
     func removeFolderByPath(_ path: String) {
         var folders = getRecentFolders()
         folders.removeAll { $0.path == path }
-        save(folders)
+        saveFolders(folders)
     }
 
     /// Resolve a bookmark to get a usable URL (starts security scope)
@@ -178,13 +260,22 @@ final class RecentFoldersManager {
         )
 
         folders[index] = updatedFolder
-        save(folders)
+        saveFolders(folders)
     }
 
-    /// Clear all recent folders
+    /// Clear all recent folders and files
     func clearAll() {
-        UserDefaults.standard.removeObject(forKey: userDefaultsKey)
-        UserDefaults.standard.removeObject(forKey: recentFilesKey)
+        cachedFolders = []
+        cachedFiles = []
+        if let foldersURL = recentFoldersFileURL {
+            try? FileManager.default.removeItem(at: foldersURL)
+        }
+        if let filesURL = recentFilesFileURL {
+            try? FileManager.default.removeItem(at: filesURL)
+        }
+        // Clean up legacy keys
+        UserDefaults.standard.removeObject(forKey: legacyFoldersKey)
+        UserDefaults.standard.removeObject(forKey: legacyFilesKey)
     }
 
     // MARK: - Session Restore
@@ -210,16 +301,46 @@ final class RecentFoldersManager {
 
     // MARK: - Recent Files
 
-    private let recentFilesKey = "recentFiles"
-    private let maxRecentFiles = 4
-
-    /// Get list of recent files, sorted by most recently opened
+    /// Get list of recent files, sorted by most recently opened.
+    /// Uses in-memory cache after first load to avoid repeated disk I/O on @MainActor.
     func getRecentFiles() -> [RecentItem] {
-        guard let data = UserDefaults.standard.data(forKey: recentFilesKey),
-              let files = try? JSONDecoder().decode([RecentItem].self, from: data) else {
-            return []
+        if let cached = cachedFiles { return cached }
+
+        let loaded = loadFilesFromDisk()
+        cachedFiles = loaded
+        return loaded
+    }
+
+    /// Loads files from disk (called once per app session, or after cache invalidation).
+    private func loadFilesFromDisk() -> [RecentItem] {
+        // Try file storage first
+        if let fileURL = recentFilesFileURL,
+           let data = try? Data(contentsOf: fileURL) {
+            do {
+                let files = try JSONDecoder().decode([RecentItem].self, from: data)
+                return files.sorted { $0.dateOpened > $1.dateOpened }
+            } catch {
+                log.error("Failed to decode RecentFiles.json: \(error.localizedDescription)")
+                try? FileManager.default.removeItem(at: fileURL)
+                return []
+            }
         }
-        return files.sorted { $0.dateOpened > $1.dateOpened }
+
+        // Try legacy UserDefaults migration
+        if let data = UserDefaults.standard.data(forKey: legacyFilesKey) {
+            do {
+                let files = try JSONDecoder().decode([RecentItem].self, from: data)
+                saveFiles(files)
+                UserDefaults.standard.removeObject(forKey: legacyFilesKey)
+                log.info("Migrated \(files.count) recent files from UserDefaults to file storage")
+                return files.sorted { $0.dateOpened > $1.dateOpened }
+            } catch {
+                log.error("Failed to decode legacy recent files: \(error.localizedDescription)")
+                UserDefaults.standard.removeObject(forKey: legacyFilesKey)
+            }
+        }
+
+        return []
     }
 
     /// Add a file to recents (called when user clicks a file in the tree)
@@ -272,15 +393,27 @@ final class RecentFoldersManager {
         return (folders + files).sorted { $0.dateOpened > $1.dateOpened }
     }
 
+    // MARK: - Private Storage
+
     private func saveFiles(_ files: [RecentItem]) {
-        guard let data = try? JSONEncoder().encode(files) else { return }
-        UserDefaults.standard.set(data, forKey: recentFilesKey)
+        guard let fileURL = recentFilesFileURL else { return }
+        cachedFiles = files.sorted { $0.dateOpened > $1.dateOpened }
+        do {
+            let data = try JSONEncoder().encode(files)
+            writeToFile(data, at: fileURL)
+        } catch {
+            log.error("Failed to encode recent files: \(error.localizedDescription)")
+        }
     }
 
-    // MARK: - Private
-
-    private func save(_ folders: [RecentFolder]) {
-        guard let data = try? JSONEncoder().encode(folders) else { return }
-        UserDefaults.standard.set(data, forKey: userDefaultsKey)
+    private func saveFolders(_ folders: [RecentFolder]) {
+        guard let fileURL = recentFoldersFileURL else { return }
+        cachedFolders = folders.sorted { $0.dateOpened > $1.dateOpened }
+        do {
+            let data = try JSONEncoder().encode(folders)
+            writeToFile(data, at: fileURL)
+        } catch {
+            log.error("Failed to encode recent folders: \(error.localizedDescription)")
+        }
     }
 }

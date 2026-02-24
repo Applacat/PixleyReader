@@ -4,7 +4,8 @@ import XCTest
 // Since ChatInputValidator is in the main app (executable target),
 // we mirror the implementation here for testing the logic.
 
-/// Test version of ChatInputValidator
+/// Test version of ChatInputValidator.
+/// Production source: Sources/Services/ChatInputValidator.swift
 private struct TestableChatInputValidator {
 
     enum ValidationError: Error, Equatable {
@@ -21,6 +22,9 @@ private struct TestableChatInputValidator {
         }
     }
 
+    /// Must match ChatConfiguration.maxInputLength in production.
+    /// Production source: Sources/Models/ChatConfiguration.swift
+    /// If production changes this value, update here too.
     static let maxInputLength = 2000
 
     static func validate(_ input: String) -> Result<String, ValidationError> {

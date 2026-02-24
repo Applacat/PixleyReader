@@ -28,6 +28,7 @@ struct StartView: View {
                 Color.clear
             }
         }
+        // Fixed 480x520: Welcome window sized for visual balance. macOS handles zoom at OS level.
         .frame(width: 480, height: 520)
         .onAppear {
             // Run launch logic first (only once)
@@ -74,10 +75,10 @@ struct StartView: View {
                             .frame(width: 140, height: 140)
                             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                             .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
-                            .accessibilityLabel("AI.md Reader app icon")
+                            .accessibilityLabel("Pixley Markdown Reader app icon")
 
                         VStack(spacing: 4) {
-                            Text("AI.md Reader")
+                            Text("Pixley Markdown Reader")
                                 .font(.title2.bold())
 
                             Text("Read what AI writes")
@@ -194,7 +195,7 @@ struct StartView: View {
         }
         panel.message = "Grant access to \(name)"
 
-        panel.begin { response in
+        panel.begin { @MainActor response in
             guard response == .OK, let selectedURL = panel.url else { return }
 
             // Save bookmark via manager
@@ -214,7 +215,7 @@ struct StartView: View {
         panel.message = "Choose a folder to browse"
         panel.prompt = "Open"
 
-        panel.begin { response in
+        panel.begin { @MainActor response in
             guard response == .OK, let url = panel.url else { return }
             self.openFolder(url)
         }
@@ -378,10 +379,7 @@ struct FolderButtonStyle: ButtonStyle {
 
 struct MascotButtonStyle: ButtonStyle {
     @State private var isHovered = false
-
-    private var reduceMotion: Bool {
-        NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-    }
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

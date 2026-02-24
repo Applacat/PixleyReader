@@ -12,6 +12,7 @@ struct BrowserView: View {
     @Environment(\.dismissWindow) private var dismissWindow
 
     @State private var isDropTargeted = false
+    @State private var allMarkdownFiles: [FolderItem] = []
 
     // State restoration
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
@@ -73,7 +74,7 @@ struct BrowserView: View {
         }
         #if os(macOS)
         .modifier(AIChatModifier(coordinator: coordinator))
-        .navigationTitle(coordinator.navigation.selectedFile?.deletingPathExtension().lastPathComponent ?? "AI.md Reader")
+        .navigationTitle(coordinator.navigation.selectedFile?.deletingPathExtension().lastPathComponent ?? "Pixley Markdown Reader")
         .toolbar {
             // Font size stepper (trailing edge, own pill)
             ToolbarItem(placement: .primaryAction) {
@@ -89,8 +90,11 @@ struct BrowserView: View {
                 dropOverlay
             }
         }
-        .quickSwitcherOverlay(allFiles: FolderTreeFilter.flattenMarkdownFiles(coordinator.navigation.displayItems))
+        .quickSwitcherOverlay(allFiles: allMarkdownFiles)
         .errorBannerOverlay()
+        .onChange(of: coordinator.navigation.displayItems) { _, newItems in
+            allMarkdownFiles = FolderTreeFilter.flattenMarkdownFiles(newItems)
+        }
     }
 
     // MARK: - No Folder View
@@ -202,6 +206,8 @@ struct OutlineFileListWrapper: View {
                     }
                     .buttonStyle(.plain)
                     .help("Clear filter")
+                    .accessibilityLabel("Clear sidebar filter")
+                    .accessibilityHint("Removes the current filter to show all files")
                 }
 
                 Button {
@@ -213,6 +219,7 @@ struct OutlineFileListWrapper: View {
                 }
                 .buttonStyle(.plain)
                 .help(showFavoritesOnly ? "Show all files" : "Show favorites only")
+                .accessibilityLabel(showFavoritesOnly ? "Show all files" : "Show favorites only")
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
@@ -263,7 +270,7 @@ struct OutlineFileListWrapper: View {
         .onChange(of: coordinator.navigation.sidebarFilterQuery) { _, _ in
             recomputeFilteredItems(debounce: true)
         }
-        .onChange(of: coordinator.navigation.displayItems.count) { _, _ in
+        .onChange(of: coordinator.navigation.displayItems) { _, _ in
             recomputeFilteredItems(debounce: false)
         }
         .onChange(of: showFavoritesOnly) { _, _ in
@@ -288,7 +295,7 @@ struct OutlineFileListWrapper: View {
             var items = coordinator.navigation.displayItems
             let query = coordinator.navigation.sidebarFilterQuery
             if !query.trimmingCharacters(in: .whitespaces).isEmpty {
-                items = FolderTreeFilter.filterByName(items, query: query)
+                items = FolderTreeFilter.filterByName(items, query: query, rootPath: coordinator.navigation.rootFolderURL?.path ?? "")
             }
 
             if showFavoritesOnly {
@@ -338,6 +345,7 @@ struct FontSizeControls: View {
                 Image(systemName: "minus")
             }
             .help("Decrease font size")
+            .accessibilityLabel("Decrease font size")
             .disabled(settings.rendering.fontSize <= 10)
 
             // Font size display
@@ -353,6 +361,7 @@ struct FontSizeControls: View {
                 Image(systemName: "plus")
             }
             .help("Increase font size")
+            .accessibilityLabel("Increase font size")
             .disabled(settings.rendering.fontSize >= 32)
         }
         .controlSize(.small)
@@ -395,6 +404,7 @@ struct AIChatModifier: ViewModifier {
                             )
                         }
                         .help(coordinator.ui.isAIChatVisible ? "Hide AI Chat" : "Show AI Chat")
+                        .accessibilityLabel(coordinator.ui.isAIChatVisible ? "Hide AI Chat" : "Show AI Chat")
                     }
                 }
         } else {

@@ -11,23 +11,25 @@ struct QuickSwitcher: View {
 
     @State private var query: String = ""
     @State private var selectedIndex: Int = 0
+    @State private var results: [FolderItem] = []
     @FocusState private var isSearchFocused: Bool
 
-    private var results: [FolderItem] {
+    /// Scores and filters files against a search query.
+    /// Prefix matches score 2, contains matches score 1.
+    private static func scoreFiles(_ files: [FolderItem], query: String) -> [FolderItem] {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
-            return Array(allFiles.prefix(20))
+            return Array(files.prefix(20))
         }
 
         let lowered = trimmed.lowercased()
 
-        // Score and sort: prefix matches ranked higher than contains
-        let scored = allFiles.compactMap { item -> (FolderItem, Int)? in
+        let scored = files.compactMap { item -> (FolderItem, Int)? in
             let name = item.name.lowercased()
             if name.hasPrefix(lowered) {
-                return (item, 2) // Prefix match = highest priority
+                return (item, 2)
             } else if name.localizedCaseInsensitiveContains(trimmed) {
-                return (item, 1) // Contains match
+                return (item, 1)
             }
             return nil
         }
@@ -63,6 +65,7 @@ struct QuickSwitcher: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 20)
             } else {
+                let resultCount = results.count
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 0) {
@@ -70,9 +73,10 @@ struct QuickSwitcher: View {
                                 QuickSwitcherRow(
                                     item: item,
                                     isSelected: index == selectedIndex,
-                                    rootURL: coordinator.navigation.rootFolderURL
+                                    parentPath: item.url.relativeParentPath(from: coordinator.navigation.rootFolderURL)
                                 )
                                 .id(index)
+                                .accessibilityValue("Result \(index + 1) of \(resultCount)")
                                 .onTapGesture {
                                     selectedIndex = index
                                     openSelected()
@@ -88,16 +92,22 @@ struct QuickSwitcher: View {
                 }
             }
         }
+        // Fixed width: 500pt chosen for optimal quick-switcher reading width. macOS handles zoom at OS level.
         .frame(width: 500)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.3), radius: 20, y: 10)
         .onAppear {
-            isSearchFocused = true
             selectedIndex = 0
+            results = Self.scoreFiles(allFiles, query: query)
+            // Delay focus to ensure view is in window hierarchy
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                isSearchFocused = true
+            }
         }
-        .onChange(of: query) { _, _ in
+        .onChange(of: query) { _, newQuery in
             selectedIndex = 0
+            results = Self.scoreFiles(allFiles, query: newQuery)
         }
         .onKeyPress(.upArrow) {
             if selectedIndex > 0 {
@@ -126,6 +136,27 @@ struct QuickSwitcher: View {
     }
 }
 
+// MARK: - URL Extension
+
+extension URL {
+    /// Computes the relative parent path from a root URL.
+    func relativeParentPath(from root: URL?) -> String {
+        guard let root else { return "" }
+        let parentURL = self.deletingLastPathComponent()
+        let rootPath = root.path
+        let parentPathStr = parentURL.path
+
+        if parentPathStr == rootPath {
+            return ""
+        }
+        if parentPathStr.hasPrefix(rootPath) {
+            let relative = String(parentPathStr.dropFirst(rootPath.count))
+            return relative.hasPrefix("/") ? String(relative.dropFirst()) : relative
+        }
+        return parentURL.lastPathComponent
+    }
+}
+
 // MARK: - Quick Switcher Row
 
 /// Single row in the quick switcher results list.
@@ -133,25 +164,7 @@ struct QuickSwitcherRow: View {
 
     let item: FolderItem
     let isSelected: Bool
-    let rootURL: URL?
-
-    /// Relative parent path from root folder
-    private var parentPath: String {
-        guard let root = rootURL else { return "" }
-        let parentURL = item.url.deletingLastPathComponent()
-        let rootPath = root.path
-        let parentPathStr = parentURL.path
-
-        if parentPathStr == rootPath {
-            return ""
-        }
-        // Strip root prefix to get relative path
-        if parentPathStr.hasPrefix(rootPath) {
-            let relative = String(parentPathStr.dropFirst(rootPath.count))
-            return relative.hasPrefix("/") ? String(relative.dropFirst()) : relative
-        }
-        return parentURL.lastPathComponent
-    }
+    let parentPath: String
 
     var body: some View {
         HStack(spacing: 8) {

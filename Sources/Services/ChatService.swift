@@ -104,11 +104,15 @@ final class ChatService {
 
         Self.log.info("Asking question: turn=\(self.turnCount + 1), question=\(question.prefix(80), privacy: .private)")
 
+        // Capture session reference to local before crossing Task boundary.
+        // Defensive against future Sendable enforcement on LanguageModelSession.
+        let capturedSession = session
+
         // Race respond() vs timeout.
         // The respond task extracts .content (String) so only Sendable types cross
         // the task boundary — Response<String> stays inside the task.
         let respondTask = Task<String, Error> {
-            let response = try await session.respond(to: question)
+            let response = try await capturedSession.respond(to: question)
             return response.content
         }
 

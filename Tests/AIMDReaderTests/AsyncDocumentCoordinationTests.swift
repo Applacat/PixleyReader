@@ -50,15 +50,12 @@ final class AsyncDocumentCoordinationTests: XCTestCase {
 
     private var loader: TestableDocumentLoader!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
-        loader = TestableDocumentLoader()
+    override func setUp() async throws {
+        loader = await TestableDocumentLoader()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         loader = nil
-        super.tearDown()
     }
 
     // MARK: - Callback Fires After Load Tests

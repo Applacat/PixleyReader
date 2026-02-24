@@ -1,0 +1,38 @@
+# Implement All Audit Fixes — Progress Tracker
+
+## Phase 1: Infrastructure & Storage (HIGH risk)
+- [DONE] US-1: Fix FolderService.swift (5 changes: concurrency, performance, storage, memory)
+- [DONE] US-2: Fix SwiftDataMetadataRepository.swift (2 changes: concurrency, storage)
+- [DONE] US-3: Migrate SecurityScopedBookmarkManager to File Storage (3 changes + migration)
+- [DONE] US-4: Migrate RecentFoldersManager to File Storage (3 changes + migration)
+
+## Phase 2: AppKit Bridging & Memory
+- [DONE] US-5: Fix MarkdownEditor.swift (4 changes: concurrency, memory, accessibility, performance)
+- [DONE] US-6: Fix OutlineFileList.swift (4 changes: performance, memory, accessibility)
+- [DONE] US-7: Fix MarkdownView.swift (3 changes: memory, performance)
+
+## Phase 3: App-Level Fixes
+- [DONE] US-8: Fix AIMDReaderApp.swift (3 changes: concurrency, memory, termination)
+- [DONE] US-9: Fix ContentView.swift (5 changes: performance, accessibility)
+- [DONE] US-10: Fix QuickSwitcher.swift (4 changes: architecture, performance, accessibility)
+
+## Phase 4: Accessibility & Chat
+- [DONE] US-11: Fix ChatView.swift (3 changes: accessibility)
+- [DONE] US-12: Fix ChatService.swift (2 changes: concurrency, documentation)
+- [DONE] US-13: Fix StartView.swift (3 changes: concurrency, performance, accessibility)
+
+## Phase 5: Polish & Documentation
+- [DONE] US-14: Fix Settings & UI Polish Files (6 changes across 3 files)
+- [DONE] US-15: Fix Model & Documentation Files (5 changes across 5 files)
+
+## Phase 6: Build Verification
+- [DONE] US-16: Full Build Verification — BUILD SUCCEEDED (0 errors, 0 warnings)
+
+---
+Updated: 2026-02-23
+Total Stories: 16
+Completed: 16
+
+## Pre-Fixed (before this spec)
+- CONC-C1: Removed `: Sendable` from FileMetadataRepository protocol
+- STOR-C1: Added `defer { url.stopAccessingSecurityScopedResource() }` in refreshStaleBookmark()

@@ -18,6 +18,7 @@ struct SettingsView: View {
                     Label("Behavior", systemImage: "gearshape")
                 }
         }
+        // Fixed 480x400: Settings window sized for form readability. macOS handles zoom at OS level.
         .frame(width: 480, height: 400)
     }
 }
@@ -101,11 +102,8 @@ struct AppearanceSettingsTab: View {
             // Theme family (light/dark variant auto-resolves from color scheme)
             Picker("Theme", selection: $rendering.syntaxTheme) {
                 ForEach(SyntaxThemeSetting.allCases) { theme in
-                    HStack {
-                        themeIndicator(theme)
-                        Text(theme.rawValue)
-                    }
-                    .tag(theme)
+                    Text("\(theme.rawValue) — \(theme.hasLightVariant ? "Light + Dark" : "Dark only")")
+                        .tag(theme)
                 }
             }
 
@@ -151,19 +149,27 @@ struct AppearanceSettingsTab: View {
     /// Indicator showing whether a theme has light+dark variants or is dark-only
     @ViewBuilder
     private func themeIndicator(_ theme: SyntaxThemeSetting) -> some View {
-        if theme.hasLightVariant {
-            // Half-and-half circle for themes with both variants
-            ZStack {
-                Circle().fill(Color.white)
-                Circle().trim(from: 0.5, to: 1.0).fill(Color.black)
-                Circle().stroke(Color.secondary.opacity(0.3), lineWidth: 0.5)
+        HStack(spacing: 4) {
+            if theme.hasLightVariant {
+                // Half-and-half circle for themes with both variants
+                ZStack {
+                    Circle().fill(Color.white)
+                    Circle().trim(from: 0.5, to: 1.0).fill(Color.black)
+                    Circle().stroke(Color.secondary.opacity(0.3), lineWidth: 0.5)
+                }
+                .frame(width: 16, height: 16)
+                Text("Light + Dark")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                Circle()
+                    .fill(Color.black)
+                    .overlay(Circle().stroke(Color.secondary.opacity(0.3), lineWidth: 0.5))
+                    .frame(width: 16, height: 16)
+                Text("Dark only")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            .frame(width: 10, height: 10)
-        } else {
-            Circle()
-                .fill(Color.black)
-                .overlay(Circle().stroke(Color.secondary.opacity(0.3), lineWidth: 0.5))
-                .frame(width: 10, height: 10)
         }
     }
 }

@@ -193,21 +193,17 @@ final class FileMetadataRepositoryTests: XCTestCase {
     private var container: ModelContainer!
     private var repository: TestableMetadataRepository!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
-        do {
-            container = try makeTestContainer()
-            repository = TestableMetadataRepository(modelContext: container.mainContext)
-        } catch {
-            XCTFail("Failed to create test container: \(error)")
+    override func setUp() async throws {
+        let testContainer = try makeTestContainer()
+        container = testContainer
+        repository = await MainActor.run {
+            TestableMetadataRepository(modelContext: testContainer.mainContext)
         }
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         container = nil
         repository = nil
-        super.tearDown()
     }
 
     // MARK: - Metadata: getMetadata

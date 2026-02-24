@@ -10,7 +10,7 @@ Lower the macOS deployment target from 26 (Tahoe) to 15 (Sequoia) so the app run
 
 ## Problem Statement
 
-AI.md Reader currently requires macOS 26, limiting its audience to users who have upgraded to Tahoe. The app's core value — browsing and reading markdown files with syntax highlighting — has no dependency on macOS 26. Only the AI Chat feature (Foundation Models) requires it. By lowering the deployment target, the app becomes available to the much larger macOS 15+ user base.
+Pixley Markdown Reader currently requires macOS 26, limiting its audience to users who have upgraded to Tahoe. The app's core value — browsing and reading markdown files with syntax highlighting — has no dependency on macOS 26. Only the AI Chat feature (Foundation Models) requires it. By lowering the deployment target, the app becomes available to the much larger macOS 15+ user base.
 
 ## Scope
 

@@ -60,7 +60,7 @@
 		7A294619650B588AAAAAB05F /* Bookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bookmark.swift; sourceTree = "<group>"; };
 		7B6BCC5252188EB88279BA7C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7CE3303CE8C9CDA35E6D110F /* QuickSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickSwitcher.swift; sourceTree = "<group>"; };
-		7DEAC2E5FF06D13FFF9D03C3 /* AI.md Reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AI.md Reader.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DEAC2E5FF06D13FFF9D03C3 /* Pixley Markdown Reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pixley Markdown Reader.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DB54E4A3239D66FA5943C91 /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatService.swift; sourceTree = "<group>"; };
 		92EABFB8D259D145F0686804 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A72700B55F5611A9AC19DEB3 /* Welcome */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Welcome; path = Resources/Welcome; sourceTree = SOURCE_ROOT; };
@@ -193,7 +193,7 @@
 		AD3F2C07A642096E7B63FEA9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7DEAC2E5FF06D13FFF9D03C3 /* AI.md Reader.app */,
+				7DEAC2E5FF06D13FFF9D03C3 /* Pixley Markdown Reader.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -241,9 +241,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		5F9B56D0E6C1DBEA945EF0EB /* AIMDReader */ = {
+		5F9B56D0E6C1DBEA945EF0EB /* Pixley Markdown Reader */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8675FC059DECD4E3C6E4FB77 /* Build configuration list for PBXNativeTarget "AIMDReader" */;
+			buildConfigurationList = 8675FC059DECD4E3C6E4FB77 /* Build configuration list for PBXNativeTarget "Pixley Markdown Reader" */;
 			buildPhases = (
 				F692BBD1E3E001CFCEF49584 /* Sources */,
 				9CDB46BDD1628B8640A10228 /* Resources */,
@@ -253,12 +253,12 @@
 			);
 			dependencies = (
 			);
-			name = AIMDReader;
+			name = "Pixley Markdown Reader";
 			packageProductDependencies = (
 				9428077C8F61970B772022B9 /* aimdRenderer */,
 			);
 			productName = AIMDReader;
-			productReference = 7DEAC2E5FF06D13FFF9D03C3 /* AI.md Reader.app */;
+			productReference = 7DEAC2E5FF06D13FFF9D03C3 /* Pixley Markdown Reader.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -268,7 +268,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2620;
 			};
 			buildConfigurationList = 7916ADC84815D67206F0673D /* Build configuration list for PBXProject "AIMDReader" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -286,7 +286,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5F9B56D0E6C1DBEA945EF0EB /* AIMDReader */,
+				5F9B56D0E6C1DBEA945EF0EB /* Pixley Markdown Reader */,
 			);
 		};
 /* End PBXProject section */
@@ -349,7 +349,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -382,11 +381,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = JN6FKBBBYQ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -402,6 +403,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -416,15 +418,22 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Markdown Reader";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MARKETING_VERSION = 2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aimd.reader;
-				PRODUCT_NAME = "AI.md Reader";
+				PRODUCT_NAME = "Pixley Markdown Reader";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
@@ -434,7 +443,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -467,11 +475,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = JN6FKBBBYQ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -490,9 +500,10 @@
 				MARKETING_VERSION = 1.2.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -507,15 +518,22 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Markdown Reader";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MARKETING_VERSION = 2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aimd.reader;
-				PRODUCT_NAME = "AI.md Reader";
+				PRODUCT_NAME = "Pixley Markdown Reader";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
@@ -533,7 +551,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		8675FC059DECD4E3C6E4FB77 /* Build configuration list for PBXNativeTarget "AIMDReader" */ = {
+		8675FC059DECD4E3C6E4FB77 /* Build configuration list for PBXNativeTarget "Pixley Markdown Reader" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CB454562E1B26A0A087F61B4 /* Debug */,

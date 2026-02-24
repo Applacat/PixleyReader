@@ -7,7 +7,7 @@ import Foundation
 /// Abstracts the persistence mechanism (SwiftData) behind a protocol
 /// for testability and potential future backends.
 @MainActor
-public protocol FileMetadataRepository: Sendable {
+public protocol FileMetadataRepository {
 
     // MARK: - Metadata Operations
 

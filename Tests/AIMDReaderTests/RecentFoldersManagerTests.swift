@@ -1,15 +1,6 @@
 import XCTest
 import Foundation
 
-// MARK: - Test Helpers
-
-extension String {
-    /// Safely convert string to Data for tests - returns empty Data if conversion fails
-    var testData: Data {
-        data(using: .utf8) ?? Data()
-    }
-}
-
 // MARK: - Test-Only Type Definitions
 // Since RecentFoldersManager is in the main app (executable target),
 // we mirror the implementation here for testing the logic.
@@ -65,6 +56,24 @@ private final class TestableRecentFoldersManager {
         }
     }
 
+    /// Add folder with explicit date — avoids Thread.sleep for deterministic ordering
+    func addFolderWithDate(_ url: URL, bookmarkData: Data, dateOpened: Date) {
+        let newFolder = TestableRecentFolder(
+            id: UUID(),
+            name: url.lastPathComponent,
+            path: url.path,
+            bookmarkData: bookmarkData,
+            dateOpened: dateOpened
+        )
+
+        folders.removeAll { $0.path == url.path }
+        folders.insert(newFolder, at: 0)
+
+        if folders.count > maxRecents {
+            folders = Array(folders.prefix(maxRecents))
+        }
+    }
+
     /// OLD behavior: calling addFolder for stale refresh (WRONG - creates duplicate/reorders)
     func refreshStaleBookmarkOldWay(_ folder: TestableRecentFolder, url: URL, newBookmarkData: Data) {
         addFolder(url, bookmarkData: newBookmarkData)
@@ -99,15 +108,12 @@ final class RecentFoldersManagerTests: XCTestCase {
 
     private var manager: TestableRecentFoldersManager!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
-        manager = TestableRecentFoldersManager()
+    override func setUp() async throws {
+        manager = await TestableRecentFoldersManager()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         manager = nil
-        super.tearDown()
     }
 
     // MARK: - Basic Tests
@@ -165,17 +171,14 @@ final class RecentFoldersManagerTests: XCTestCase {
 
     @MainActor
     func testRefreshStaleBookmark_preservesOrder() throws {
-        // Given: Multiple folders
+        // Given: Multiple folders with explicit timestamps (no Thread.sleep needed)
         let url1 = URL(fileURLWithPath: "/Users/test/Folder1")
         let url2 = URL(fileURLWithPath: "/Users/test/Folder2")
         let url3 = URL(fileURLWithPath: "/Users/test/Folder3")
 
-        manager.addFolder(url1, bookmarkData: "b1".testData)
-        // Small delay to ensure different timestamps
-        Thread.sleep(forTimeInterval: 0.01)
-        manager.addFolder(url2, bookmarkData: "b2".testData)
-        Thread.sleep(forTimeInterval: 0.01)
-        manager.addFolder(url3, bookmarkData: "b3".testData)
+        manager.addFolderWithDate(url1, bookmarkData: "b1".testData, dateOpened: Date(timeIntervalSince1970: 1000))
+        manager.addFolderWithDate(url2, bookmarkData: "b2".testData, dateOpened: Date(timeIntervalSince1970: 2000))
+        manager.addFolderWithDate(url3, bookmarkData: "b3".testData, dateOpened: Date(timeIntervalSince1970: 3000))
 
         // url3 is most recent, url1 is oldest
         let folders = manager.getRecentFolders()
@@ -212,16 +215,14 @@ final class RecentFoldersManagerTests: XCTestCase {
     func testOldRefreshBehavior_changesOrder() throws {
         // This test demonstrates the OLD (incorrect) behavior
 
-        // Given: Multiple folders
+        // Given: Multiple folders with explicit timestamps (no Thread.sleep needed)
         let url1 = URL(fileURLWithPath: "/Users/test/Folder1")
         let url2 = URL(fileURLWithPath: "/Users/test/Folder2")
         let url3 = URL(fileURLWithPath: "/Users/test/Folder3")
 
-        manager.addFolder(url1, bookmarkData: "b1".testData)
-        Thread.sleep(forTimeInterval: 0.01)
-        manager.addFolder(url2, bookmarkData: "b2".testData)
-        Thread.sleep(forTimeInterval: 0.01)
-        manager.addFolder(url3, bookmarkData: "b3".testData)
+        manager.addFolderWithDate(url1, bookmarkData: "b1".testData, dateOpened: Date(timeIntervalSince1970: 1000))
+        manager.addFolderWithDate(url2, bookmarkData: "b2".testData, dateOpened: Date(timeIntervalSince1970: 2000))
+        manager.addFolderWithDate(url3, bookmarkData: "b3".testData, dateOpened: Date(timeIntervalSince1970: 3000))
 
         // url3 is most recent, url1 is oldest
         let folders = manager.getRecentFolders()

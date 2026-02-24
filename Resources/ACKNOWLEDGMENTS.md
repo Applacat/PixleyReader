@@ -1,6 +1,6 @@
 # Third-Party Acknowledgments
 
-AI.md Reader uses color values inspired by the following open-source syntax
+Pixley Markdown Reader uses color values inspired by the following open-source syntax
 theme projects. All are used under the MIT License.
 
 ---

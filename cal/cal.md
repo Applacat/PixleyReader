@@ -260,3 +260,46 @@ All Swift 6 concurrency and memory audits pass with 0 issues.
 Wire Phase 2 components into views OR skip to user-visible feature (Phase 4/5)
 
 ---
+
+## 2026-02-24 DECISION — v2.0 Submitted to App Store
+
+**Milestone:** Pixley Markdown Reader 2.0 submitted for review.
+
+**App Store changes:**
+- **Name:** Pixley Markdown Reader (display name: "Markdown Reader")
+- **Subtitle:** "AI Chat & Color Themes" (was "Browse & AI Chat Markdown")
+- **Category:** Productivity (primary) + Developer Tools (secondary)
+- **Spanish (Mexico) localization** added for US keyword expansion (~doubles indexed keywords)
+- **Description** rewritten for prosumer audience (vibe coders, not traditional devs)
+- **Promotional text:** "Read what AI writes." tagline lives here now
+
+**ASO strategy:**
+- Technical jargon in keyword fields (invisible), plain language in user-facing copy
+- No trademarked names (ChatGPT, Claude, Cursor, Copilot) — Apple rejects these
+- Screenshot captions indexed as of June 2025 — captions designed for both conversion and search
+- Target: 5 ratings to show stars (SKStoreReviewController planned for 2.1)
+
+**Code changes in this session:**
+- CFBundleDisplayName: "Pixley Reader" → "Markdown Reader" (Info.plist)
+- CURRENT_PROJECT_VERSION: 1 → 3 (all build configs)
+- MARKETING_VERSION: 2 (all build configs)
+- Folder sort: files before folders (was folders first)
+- Welcome files: moved 04/05 into "Tips and Tricks" subfolder
+- Welcome content: tables replaced with lists (renderer doesn't support tables)
+- Welcome content: rewritten with code blocks, blockquotes, richer markdown
+- Theme picker: fixed bug showing "Light + Dark" / "Dark only" instead of theme names
+- Settings picker: HStack with custom views → plain Text (menu-style Picker compatibility)
+
+**Key learnings:**
+- App Store description is NOT indexed for search — only title, subtitle, keyword field
+- Promotional text is NOT indexed — can be updated without new version
+- Spanish (Mexico) keywords are indexed in US App Store (cross-localization hack)
+- Cross-locale keywords do NOT combine into phrases across locales
+- Menu-style SwiftUI Pickers cannot render custom HStack views — use plain Text
+
+**Next for 2.1:**
+- SKStoreReviewController implementation (plan ready, 1 service + 2 call sites)
+- Screenshots (plan in App Store/screenshots.md)
+- Table rendering support (not trivial — needs NSTextTable or WKWebView)
+
+---

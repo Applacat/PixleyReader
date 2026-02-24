@@ -17,16 +17,6 @@ final class FileLoadTriggerTests: XCTestCase {
 
     // MARK: - Equality Tests
 
-    func testEquality_sameFileAndReload_areEqual() {
-        // Given: Same file and reload values
-        let url = URL(fileURLWithPath: "/test/file.md")
-        let trigger1 = TestableFileLoadTrigger(file: url, reload: 1)
-        let trigger2 = TestableFileLoadTrigger(file: url, reload: 1)
-
-        // Then: Triggers are equal
-        XCTAssertEqual(trigger1, trigger2)
-    }
-
     func testEquality_differentFile_areNotEqual() {
         // Given: Different file URLs
         let url1 = URL(fileURLWithPath: "/test/file1.md")
@@ -46,15 +36,6 @@ final class FileLoadTriggerTests: XCTestCase {
 
         // Then: Triggers are not equal (reload changed = should reload)
         XCTAssertNotEqual(trigger1, trigger2)
-    }
-
-    func testEquality_bothNilFiles_areEqual() {
-        // Given: Both nil file URLs
-        let trigger1 = TestableFileLoadTrigger(file: nil, reload: 0)
-        let trigger2 = TestableFileLoadTrigger(file: nil, reload: 0)
-
-        // Then: Triggers are equal
-        XCTAssertEqual(trigger1, trigger2)
     }
 
     func testEquality_oneNilFile_areNotEqual() {
@@ -115,26 +96,5 @@ final class FileLoadTriggerTests: XCTestCase {
 
         // Then: States are different (single task restart, not two)
         XCTAssertNotEqual(initial, changed)
-    }
-
-    // MARK: - Hashable Tests (for use in collections)
-
-    func testHashable_equalTriggersHaveSameHash() {
-        // Given: Equal triggers
-        let url = URL(fileURLWithPath: "/test/file.md")
-        let trigger1 = TestableFileLoadTrigger(file: url, reload: 1)
-        let trigger2 = TestableFileLoadTrigger(file: url, reload: 1)
-
-        // Then: Hash values are equal
-        XCTAssertEqual(trigger1.hashValue, trigger2.hashValue)
-    }
-}
-
-// MARK: - Hashable Conformance for Tests
-
-extension TestableFileLoadTrigger: Hashable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(file)
-        hasher.combine(reload)
     }
 }

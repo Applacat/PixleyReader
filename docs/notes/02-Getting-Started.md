@@ -1,12 +1,12 @@
-# Getting Started with AI.md Reader
+# Getting Started with Pixley Markdown Reader
 
-Welcome! This guide will help you get the most out of AI.md Reader.
+Welcome! This guide will help you get the most out of Pixley Markdown Reader.
 
 ---
 
 ## Opening Folders
 
-AI.md Reader works with folders containing markdown files. Here's how to open them:
+Pixley Markdown Reader works with folders containing markdown files. Here's how to open them:
 
 ### Method 1: Start Screen Shortcuts
 When you launch the app, you'll see quick shortcuts:
@@ -42,7 +42,7 @@ The left sidebar shows your folder structure:
 
 ### Syntax Highlighting
 
-AI.md Reader makes markdown beautiful with automatic styling:
+Pixley Markdown Reader makes markdown beautiful with automatic styling:
 
 - **# Headings** → Large, blue, bold text
 - **## Subheadings** → Medium, indigo text
@@ -68,13 +68,13 @@ Font size adjusts from **10pt to 32pt**.
 ## Performance Tips
 
 ### Large Files
-AI.md Reader handles files up to **10 MB** in size. Files over **1 MB** will show as plain text (no syntax highlighting) for better performance.
+Pixley Markdown Reader handles files up to **10 MB** in size. Files over **1 MB** will show as plain text (no syntax highlighting) for better performance.
 
 ### Many Files
 The app caches folder structures for faster loading. If you add/remove files, use **⌘R** to reload.
 
 ### Smooth Typing
-If you edit files in AI.md Reader, the highlighting is debounced (waits 150ms after you stop typing) to keep things smooth.
+If you edit files in Pixley Markdown Reader, the highlighting is debounced (waits 150ms after you stop typing) to keep things smooth.
 
 ---
 
@@ -113,10 +113,10 @@ AI Chat uses Apple's on-device Foundation Models. Your data never leaves your Ma
 ## Advanced Features
 
 ### Session Restore
-AI.md Reader remembers the last folder you had open and automatically reopens it on launch.
+Pixley Markdown Reader remembers the last folder you had open and automatically reopens it on launch.
 
 ### First Launch Welcome
-On first launch, the app shows this Welcome tutorial automatically. You can reopen it anytime from **Help → AI.md Reader Help**.
+On first launch, the app shows this Welcome tutorial automatically. You can reopen it anytime from **Help → Pixley Markdown Reader Help**.
 
 ### Security-Scoped Bookmarks
 The app uses macOS security features to remember folders you've granted access to, so you don't have to grant permission every time.
@@ -141,7 +141,7 @@ The app uses macOS security features to remember folders you've granted access t
 - Try a smaller folder with fewer files
 
 ### Welcome Tutorial Disappeared
-- Use **Help → AI.md Reader Help** to reopen it
+- Use **Help → Pixley Markdown Reader Help** to reopen it
 - Or **Help → Getting Started** to see this guide
 
 ---
@@ -170,7 +170,7 @@ Keep frequently-used markdown folders in your:
 The sidebar shows folder badges with markdown counts. Look for high numbers to find documentation-heavy folders!
 
 ### 🌓 Dark Mode
-AI.md Reader respects your system dark mode setting. Toggle it in **System Settings → Appearance**.
+Pixley Markdown Reader respects your system dark mode setting. Toggle it in **System Settings → Appearance**.
 
 ---
 
@@ -186,4 +186,4 @@ Enjoy beautiful markdown reading! 📖✨
 
 ---
 
-*Questions? Check **Help → About AI.md Reader** for more info.*
+*Questions? Check **Help → About Pixley Markdown Reader** for more info.*

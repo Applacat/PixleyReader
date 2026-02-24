@@ -16,6 +16,18 @@ enum MarkdownConfig {
     static let maxHighlightSize = 1_048_576
 }
 
+// MARK: - Custom NSTextView
+
+/// NSTextView subclass that ensures the find bar can be dismissed with Esc
+/// when hosted inside SwiftUI (SwiftUI can intercept key events before AppKit).
+final class MarkdownNSTextView: NSTextView {
+    override func cancelOperation(_ sender: Any?) {
+        let hideItem = NSMenuItem()
+        hideItem.tag = NSTextFinder.Action.hideFindInterface.rawValue
+        performFindPanelAction(hideItem)
+    }
+}
+
 // MARK: - Markdown Editor
 
 /// NSTextView wrapper with Markdown syntax highlighting.
@@ -40,10 +52,29 @@ struct MarkdownEditor: NSViewRepresentable {
     var onToggleBookmark: ((Int) -> Void)? = nil
 
     func makeNSView(context: Context) -> NSScrollView {
-        let scrollView = NSTextView.scrollableTextView()
-        guard let textView = scrollView.documentView as? NSTextView else {
-            return scrollView
-        }
+        // Manual TextKit stack so we can use our custom NSTextView subclass
+        // (MarkdownNSTextView handles Esc to dismiss the find bar in SwiftUI)
+        let textStorage = NSTextStorage()
+        let layoutManager = NSLayoutManager()
+        textStorage.addLayoutManager(layoutManager)
+
+        let textContainer = NSTextContainer()
+        textContainer.widthTracksTextView = true
+        textContainer.containerSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude)
+        layoutManager.addTextContainer(textContainer)
+
+        let textView = MarkdownNSTextView(frame: .zero, textContainer: textContainer)
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.autoresizingMask = [.width]
+        textView.minSize = .zero
+        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+
+        let scrollView = NSScrollView()
+        scrollView.documentView = textView
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
 
         // Configure text view (read-only viewer)
         textView.isEditable = false
@@ -72,6 +103,16 @@ struct MarkdownEditor: NSViewRepresentable {
         textView.usesFindBar = true
         textView.isIncrementalSearchingEnabled = true
 
+        // Link appearance — theme color with optional underline
+        var linkAttrs: [NSAttributedString.Key: Any] = [
+            .foregroundColor: NSColor(hex: palette.function) ?? .systemTeal,
+            .cursor: NSCursor.pointingHand
+        ]
+        if settings.behavior.underlineLinks {
+            linkAttrs[.underlineStyle] = NSUnderlineStyle.single.rawValue
+        }
+        textView.linkTextAttributes = linkAttrs
+
         // Line numbers + bookmarks
         let lineNumberView = LineNumberRulerView(textView: textView)
         lineNumberView.bookmarkedLines = bookmarkedLines
@@ -79,6 +120,12 @@ struct MarkdownEditor: NSViewRepresentable {
         scrollView.verticalRulerView = lineNumberView
         scrollView.hasVerticalRuler = true
         scrollView.rulersVisible = settings.rendering.showLineNumbers
+
+        // Accessibility
+        textView.setAccessibilityElement(true)
+        textView.setAccessibilityLabel("Markdown document viewer")
+        textView.setAccessibilityRole(.textArea)
+        textView.setAccessibilityHelp("Read-only markdown content with syntax highlighting. Use Cmd+F to search.")
 
         // Delegate
         textView.delegate = context.coordinator
@@ -126,6 +173,16 @@ struct MarkdownEditor: NSViewRepresentable {
             textView.backgroundColor = NSColor(hex: palette.background) ?? .textBackgroundColor
             textView.insertionPointColor = NSColor(hex: palette.foreground) ?? .labelColor
 
+            // Update link appearance
+            var linkAttrs: [NSAttributedString.Key: Any] = [
+                .foregroundColor: NSColor(hex: palette.function) ?? .systemTeal,
+                .cursor: NSCursor.pointingHand
+            ]
+            if settings.behavior.underlineLinks {
+                linkAttrs[.underlineStyle] = NSUnderlineStyle.single.rawValue
+            }
+            textView.linkTextAttributes = linkAttrs
+
             // Re-apply highlighting with new settings
             context.coordinator.applyHighlighting(to: textView, text: text)
         }
@@ -150,6 +207,13 @@ struct MarkdownEditor: NSViewRepresentable {
             ruler.onToggleBookmark = onToggleBookmark
             ruler.needsDisplay = true
         }
+    }
+
+    static func dismantleNSView(_ scrollView: NSScrollView, coordinator: Coordinator) {
+        if let textView = scrollView.documentView as? NSTextView {
+            textView.delegate = nil
+        }
+        NotificationCenter.default.removeObserver(coordinator)
     }
 
     func makeCoordinator() -> Coordinator {
@@ -210,17 +274,17 @@ struct MarkdownEditor: NSViewRepresentable {
                 onError?(.textSizeExceeded)
                 return
             }
-            
-            isUpdating = true
-            defer { isUpdating = false }
 
+            isUpdating = true
             let selectedRanges = textView.selectedRanges
-            
-            // Apply syntax highlighting synchronously using the debounced highlighter's instance
+
+            // Highlight synchronously — the debounced highlighter already coalesces rapid updates.
+            // NSAttributedString isn't Sendable on macOS, so offloading to Task.detached
+            // would require unsafe transfers. Highlighting is fast enough on-main-actor.
             let attributed = debouncedHighlighter.highlighter.highlight(text)
             textView.textStorage?.setAttributedString(attributed)
-
             textView.selectedRanges = selectedRanges
+            isUpdating = false
         }
 
         nonisolated func textDidChange(_ notification: Notification) {
@@ -258,10 +322,20 @@ struct MarkdownEditor: NSViewRepresentable {
             }
         }
 
+        // MARK: - Link Handling
+
+        nonisolated func textView(_ textView: NSTextView, clickedOnLink link: Any, at charIndex: Int) -> Bool {
+            guard let url = link as? URL else { return false }
+            NSWorkspace.shared.open(url)
+            return true
+        }
+
         // MARK: - Scroll Position
 
         @objc nonisolated func scrollViewDidScroll(_ notification: Notification) {
-            // Safe: AppKit always delivers this on the main thread
+            // AppKit delivers boundsDidChange on the main thread.
+            // nonisolated(unsafe) required: notification.object is Any? (not Sendable),
+            // but we immediately enter MainActor.assumeIsolated — no actual cross-thread access.
             nonisolated(unsafe) let object = notification.object
             MainActor.assumeIsolated {
                 guard let clipView = object as? NSClipView,
@@ -282,7 +356,7 @@ struct MarkdownEditor: NSViewRepresentable {
             guard let documentView = scrollView.documentView else { return }
 
             // Defer to next layout pass so text is fully laid out
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 let contentHeight = documentView.frame.height
                 let visibleHeight = scrollView.contentView.bounds.height
                 let scrollableHeight = contentHeight - visibleHeight

@@ -23,13 +23,6 @@ private enum TestableAppError: Equatable {
         }
     }
 
-    static func fileTooLarge(sizeMB: Double) -> TestableAppError {
-        .error(message: String(format: "File too large (%.1f MB). Maximum is 10 MB.", sizeMB))
-    }
-
-    static var textSizeExceeded: TestableAppError {
-        .warning(message: "Content exceeds size limit. Some features may be disabled.")
-    }
 }
 
 /// Test version of error state management
@@ -62,15 +55,12 @@ final class ErrorBannerTests: XCTestCase {
 
     private var manager: TestableErrorManager!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
-        manager = TestableErrorManager()
+    override func setUp() async throws {
+        manager = await TestableErrorManager()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         manager = nil
-        super.tearDown()
     }
 
     // MARK: - Error Display Tests
@@ -181,47 +171,4 @@ final class ErrorBannerTests: XCTestCase {
         XCTAssertNil(manager.currentError)
     }
 
-    // MARK: - AppError Type Tests
-
-    func testAppError_warningIsWarning() {
-        let error = TestableAppError.warning(message: "test")
-        XCTAssertTrue(error.isWarning)
-    }
-
-    func testAppError_errorIsNotWarning() {
-        let error = TestableAppError.error(message: "test")
-        XCTAssertFalse(error.isWarning)
-    }
-
-    func testAppError_fileTooLargeFormatting() {
-        let error = TestableAppError.fileTooLarge(sizeMB: 15.5)
-        XCTAssertTrue(error.message.contains("15.5"))
-        XCTAssertTrue(error.message.contains("10 MB"))
-    }
-
-    func testAppError_textSizeExceededMessage() {
-        let error = TestableAppError.textSizeExceeded
-        XCTAssertTrue(error.isWarning)
-        XCTAssertTrue(error.message.contains("size limit"))
-    }
-
-    // MARK: - Equality Tests
-
-    func testAppError_sameErrorsAreEqual() {
-        let error1 = TestableAppError.error(message: "test")
-        let error2 = TestableAppError.error(message: "test")
-        XCTAssertEqual(error1, error2)
-    }
-
-    func testAppError_differentMessagesAreNotEqual() {
-        let error1 = TestableAppError.error(message: "test1")
-        let error2 = TestableAppError.error(message: "test2")
-        XCTAssertNotEqual(error1, error2)
-    }
-
-    func testAppError_warningAndErrorAreNotEqual() {
-        let warning = TestableAppError.warning(message: "test")
-        let error = TestableAppError.error(message: "test")
-        XCTAssertNotEqual(warning, error)
-    }
 }

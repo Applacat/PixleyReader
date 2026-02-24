@@ -1,4 +1,4 @@
-# Pre-Submission Fixes - AI.md Reader
+# Pre-Submission Fixes - Pixley Markdown Reader
 ## February 3, 2026
 
 ### ✅ Fixes Implemented (Priority 1-9)

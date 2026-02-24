@@ -311,6 +311,11 @@ public final class UserDefaultsSettingsRepository: SettingsRepository {
 
 /// Environment key for accessing settings repository
 /// Note: Returns concrete type for SwiftUI Environment compatibility
+// @preconcurrency required: EnvironmentKey.defaultValue lacks @MainActor annotation.
+// Safe because SwiftUI accesses this on @MainActor view update path.
+// TODO: Consider decomposing aggregated settings repository into domain-specific
+// repositories (AppearanceSettings, BehaviorSettings) if the file grows beyond
+// its current scope. Also consider removing SwiftUI import coupling in the future.
 private struct SettingsRepositoryKey: @preconcurrency EnvironmentKey {
     @MainActor static var defaultValue = UserDefaultsSettingsRepository.shared
 }

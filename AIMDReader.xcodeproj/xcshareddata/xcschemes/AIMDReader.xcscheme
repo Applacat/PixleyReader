@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1430"
+   LastUpgradeVersion = "2620"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "5F9B56D0E6C1DBEA945EF0EB"
-               BuildableName = "AI.md Reader.app"
-               BlueprintName = "AIMDReader"
+               BuildableName = "Pixley Markdown Reader.app"
+               BlueprintName = "Pixley Markdown Reader"
                ReferencedContainer = "container:AIMDReader.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -31,8 +31,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5F9B56D0E6C1DBEA945EF0EB"
-            BuildableName = "AI.md Reader.app"
-            BlueprintName = "AIMDReader"
+            BuildableName = "Pixley Markdown Reader.app"
+            BlueprintName = "Pixley Markdown Reader"
             ReferencedContainer = "container:AIMDReader.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -54,8 +54,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5F9B56D0E6C1DBEA945EF0EB"
-            BuildableName = "AI.md Reader.app"
-            BlueprintName = "AIMDReader"
+            BuildableName = "Pixley Markdown Reader.app"
+            BlueprintName = "Pixley Markdown Reader"
             ReferencedContainer = "container:AIMDReader.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -71,8 +71,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5F9B56D0E6C1DBEA945EF0EB"
-            BuildableName = "AI.md Reader.app"
-            BlueprintName = "AIMDReader"
+            BuildableName = "Pixley Markdown Reader.app"
+            BlueprintName = "Pixley Markdown Reader"
             ReferencedContainer = "container:AIMDReader.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -1,4 +1,4 @@
-# AI.md Reader - Pre-Ship Security & Quality Review
+# Pixley Markdown Reader - Pre-Ship Security & Quality Review
 **Date:** February 4, 2026  
 **Reviewer:** AI Code Assistant  
 **Status:** ⚠️ ISSUES FOUND - DO NOT SHIP WITHOUT FIXES

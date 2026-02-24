@@ -56,6 +56,7 @@ final class MarkdownHighlighter {
         case bold
         case italic
         case link
+        case bareLink
         case listMarker
         case blockquote
         case separator
@@ -133,7 +134,8 @@ final class MarkdownHighlighter {
             (#"`[^`\n]+`"#, .inlineCode),
             (#"\*\*(.+?)\*\*|__(.+?)__"#, .bold),
             (#"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)(.+?)(?<!_)_(?!_)"#, .italic),
-            (#"\[([^\]]+)\]\([^\)]+\)"#, .link),
+            (#"\[([^\]]+)\]\(([^\)]+)\)"#, .link),
+            (#"(?<!\()https?://[^\s\]\)>]+"#, .bareLink),
             (#"^[\t ]*[-*+][\t ]"#, .listMarker),
             (#"^[\t ]*\d+\.[\t ]"#, .listMarker),
             (#"^>.*$"#, .blockquote),
@@ -221,6 +223,27 @@ final class MarkdownHighlighter {
 
         case .link:
             str.addAttribute(.foregroundColor, value: theme.link, range: match.range)
+            // Make the link text (group 1) clickable using the URL (group 2)
+            if match.numberOfRanges > 2 {
+                let textRange = match.range(at: 1)
+                let urlRange = match.range(at: 2)
+                if textRange.location != NSNotFound && urlRange.location != NSNotFound,
+                   let swiftRange = Range(urlRange, in: str.string) {
+                    let urlString = String(str.string[swiftRange])
+                    if let url = URL(string: urlString) {
+                        str.addAttribute(.link, value: url, range: textRange)
+                    }
+                }
+            }
+
+        case .bareLink:
+            str.addAttribute(.foregroundColor, value: theme.link, range: match.range)
+            if let swiftRange = Range(match.range, in: str.string) {
+                let urlString = String(str.string[swiftRange])
+                if let url = URL(string: urlString) {
+                    str.addAttribute(.link, value: url, range: match.range)
+                }
+            }
 
         case .listMarker:
             str.addAttribute(.foregroundColor, value: theme.listMarker, range: match.range)

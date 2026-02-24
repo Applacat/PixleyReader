@@ -18,6 +18,11 @@ enum LaunchState {
 class AppDelegate: NSObject, NSApplicationDelegate {
     static var coordinator: AppCoordinator?
 
+    func applicationWillTerminate(_ notification: Notification) {
+        Self.coordinator?.flushScrollPosition()
+        FolderService.shared.flushCacheIfNeeded()
+    }
+
     func application(_ application: NSApplication, open urls: [URL]) {
         guard let coordinator = Self.coordinator, let url = urls.first else { return }
 
@@ -63,17 +68,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         panel.message = "Grant access to this folder to browse its contents"
         panel.prompt = "Open"
 
-        panel.begin { [weak coordinator] response in
+        panel.begin { @MainActor [weak self, weak coordinator] response in
             guard response == .OK,
                   let grantedURL = panel.url,
+                  let self,
                   let coordinator else { return }
 
-            Task { @MainActor in
-                RecentFoldersManager.shared.addFolder(grantedURL)
-                coordinator.openFolder(grantedURL)
-                coordinator.selectFile(fileURL)
-                self.activateOrOpenBrowser(coordinator)
-            }
+            RecentFoldersManager.shared.addFolder(grantedURL)
+            coordinator.openFolder(grantedURL)
+            coordinator.selectFile(fileURL)
+            self.activateOrOpenBrowser(coordinator)
         }
     }
 
@@ -92,7 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 // MARK: - App Entry Point
 
-/// AI.md Reader - A native macOS markdown reader for AI-generated files.
+/// Pixley Markdown Reader - A native macOS markdown reader for AI-generated files.
 /// Watch what AI writes, ask questions about it, stay in flow.
 @main
 struct AIMDReaderApp: App {
@@ -127,7 +131,7 @@ struct AIMDReaderApp: App {
 
     var body: some Scene {
         // Start window - minimal launcher
-        Window("AI.md Reader", id: "start") {
+        Window("Pixley Markdown Reader", id: "start") {
             StartView(performLaunchIfNeeded: performLaunchIfNeeded)
                 .environment(\.coordinator, coordinator)
                 .environment(\.settings, settings)
@@ -146,7 +150,7 @@ struct AIMDReaderApp: App {
         #endif
 
         // Browser window - shown after folder selection
-        WindowGroup("AI.md Reader", id: "browser") {
+        WindowGroup("Pixley Markdown Reader", id: "browser") {
             BrowserView()
                 .environment(\.coordinator, coordinator)
                 .environment(\.settings, settings)
@@ -171,6 +175,12 @@ struct AIMDReaderApp: App {
                 }
                 .keyboardShortcut("r", modifiers: [.command])
                 .disabled(coordinator.navigation.selectedFile == nil)
+
+                Button("Close Folder") {
+                    coordinator.closeFolder()
+                }
+                .keyboardShortcut("w", modifiers: [.command])
+                .disabled(coordinator.navigation.rootFolderURL == nil)
             }
             
             CommandGroup(after: .textEditing) {
@@ -180,25 +190,71 @@ struct AIMDReaderApp: App {
                 .keyboardShortcut("p", modifiers: [.command])
             }
 
+            // Find menu — routes to NSTextView's native find bar
+            CommandGroup(after: .textEditing) {
+                Button("Find...") {
+                    Self.sendFindPanelAction(NSTextFinder.Action.showFindInterface.rawValue)
+                }
+                .keyboardShortcut("f", modifiers: [.command])
+
+                Button("Find Next") {
+                    Self.sendFindPanelAction(NSTextFinder.Action.nextMatch.rawValue)
+                }
+                .keyboardShortcut("g", modifiers: [.command])
+
+                Button("Find Previous") {
+                    Self.sendFindPanelAction(NSTextFinder.Action.previousMatch.rawValue)
+                }
+                .keyboardShortcut("g", modifiers: [.command, .shift])
+            }
+
+            // View menu — font size + AI Chat toggle
+            CommandGroup(after: .toolbar) {
+                if #available(macOS 26, *) {
+                    Button(coordinator.ui.isAIChatVisible ? "Hide AI Chat" : "Show AI Chat") {
+                        withAnimation {
+                            coordinator.toggleAIChat()
+                        }
+                    }
+                    .keyboardShortcut("a", modifiers: [.command, .shift])
+
+                    Divider()
+                }
+
+                Button("Increase Font Size") {
+                    settings.rendering.fontSize = min(32, settings.rendering.fontSize + 1)
+                }
+                .keyboardShortcut("=", modifiers: [.command])
+
+                Button("Decrease Font Size") {
+                    settings.rendering.fontSize = max(10, settings.rendering.fontSize - 1)
+                }
+                .keyboardShortcut("-", modifiers: [.command])
+            }
+
             // Help menu
             CommandGroup(replacing: .help) {
-                Button("AI.md Reader Help") {
+                Button("Pixley Markdown Reader Help") {
                     openWelcomeToPage("01-Welcome.md")
                 }
                 .keyboardShortcut("/", modifiers: [.command])
                 
-                Button("Browsing Folders") {
-                    openWelcomeToPage("02-Browsing-Folders.md")
+                Button("Reading Documents") {
+                    openWelcomeToPage("02-Reading.md")
                 }
-                
+
+                Button("Navigating Files") {
+                    openWelcomeToPage("03-Navigating.md")
+                }
+
                 if #available(macOS 26, *) {
                     Button("AI Chat") {
-                        openWelcomeToPage("03-AI-Chat.md")
+                        openWelcomeToPage("Tips and Tricks/04-AI-Chat.md")
                     }
                 }
 
-                Button("Keyboard Shortcuts") {
-                    openWelcomeToPage("04-Keyboard-Shortcuts.md")
+                Button("Quick Reference") {
+                    openWelcomeToPage("Tips and Tricks/05-Quick-Reference.md")
                 }
                 
                 Divider()
@@ -208,7 +264,7 @@ struct AIMDReaderApp: App {
             
             // About menu
             CommandGroup(replacing: .appInfo) {
-                Button("About AI.md Reader") {
+                Button("About Pixley Markdown Reader") {
                     showAboutPanel()
                 }
             }
@@ -295,6 +351,35 @@ struct AIMDReaderApp: App {
     }
 
     #if os(macOS)
+    // MARK: - Find Panel
+
+    private static func sendFindPanelAction(_ tag: Int) {
+        let menuItem = NSMenuItem()
+        menuItem.tag = tag
+
+        // Find the markdown NSTextView directly (identified by usesFindBar)
+        // and make it first responder so the find bar attaches correctly
+        if let window = NSApp.keyWindow,
+           let textView = findMarkdownTextView(in: window.contentView) {
+            window.makeFirstResponder(textView)
+            textView.performFindPanelAction(menuItem)
+        }
+    }
+
+    /// Recursively searches the view hierarchy for the markdown NSTextView (has usesFindBar enabled)
+    private static func findMarkdownTextView(in view: NSView?) -> NSTextView? {
+        guard let view else { return nil }
+        if let textView = view as? NSTextView, textView.usesFindBar {
+            return textView
+        }
+        for subview in view.subviews {
+            if let found = findMarkdownTextView(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+
     // MARK: - Open Folder (macOS)
 
     private func openFolderPanel() {
@@ -305,7 +390,7 @@ struct AIMDReaderApp: App {
         panel.message = "Choose a folder to browse markdown files"
         panel.prompt = "Choose"
 
-        panel.begin { response in
+        panel.begin { @MainActor response in
             guard response == .OK, let folderURL = panel.url else { return }
             self.coordinator.openFolder(folderURL)
         }

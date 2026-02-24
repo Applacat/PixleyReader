@@ -6,13 +6,13 @@ private let logger = Logger(subsystem: "com.aimd.reader", category: "FolderServi
 // MARK: - Cached Folder Item
 
 /// Cached representation of a folder tree with modification dates for diffing
-struct CachedFolder: Codable {
+struct CachedFolder: Codable, Sendable {
     let path: String
     let modificationDate: Date
     let items: [CachedItem]
 }
 
-struct CachedItem: Codable {
+struct CachedItem: Codable, Sendable {
     let path: String
     let name: String
     let isFolder: Bool
@@ -33,8 +33,9 @@ final class FolderService {
     private var cacheSaveTask: Task<Void, Never>?
 
     private init() {
-        // Load cache asynchronously to avoid blocking main thread during init
-        Task.detached(priority: .utility) { [weak self] in
+        // Load cache asynchronously — [weak self] for pattern consistency
+        // (singleton won't deallocate, but prevents copying this pattern to non-singletons)
+        Task { [weak self] in
             await self?.loadCacheFromDisk()
         }
     }
@@ -69,29 +70,41 @@ final class FolderService {
     /// Multiple rapid invalidations coalesce into a single disk write.
     private func scheduleCacheSave() {
         cacheSaveTask?.cancel()
-        cacheSaveTask = Task {
+        cacheSaveTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
-            saveCacheToDisk()
+            self?.saveCacheToDisk()
         }
     }
 
     private func saveCacheToDisk() {
         guard let url = cacheFileURL else { return }
+        let snapshot = cache
 
-        // Ensure directory exists
-        let dir = url.deletingLastPathComponent()
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        Task.detached(priority: .utility) {
+            let dir = url.deletingLastPathComponent()
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
 
-        if let data = try? JSONEncoder().encode(cache) {
-            try? data.write(to: url, options: .completeFileProtectionUntilFirstUserAuthentication)
+            guard let data = try? JSONEncoder().encode(snapshot) else { return }
 
-            // Exclude from backup - this is regenerable cache data
+            // Exclude from backup before write (effective if file already exists)
             var resourceValues = URLResourceValues()
             resourceValues.isExcludedFromBackup = true
             var mutableURL = url
             try? mutableURL.setResourceValues(resourceValues)
+
+            try? data.write(to: url, options: .completeFileProtectionUntilFirstUserAuthentication)
+
+            // Re-apply for newly created files
+            try? mutableURL.setResourceValues(resourceValues)
         }
+    }
+
+    /// Flushes any pending cache write immediately. Call on app termination.
+    func flushCacheIfNeeded() {
+        cacheSaveTask?.cancel()
+        cacheSaveTask = nil
+        saveCacheToDisk()
     }
 
     func clearCache() {
@@ -246,7 +259,7 @@ final class FolderService {
         }
 
         return items.sorted { lhs, rhs in
-            if lhs.isFolder != rhs.isFolder { return lhs.isFolder }
+            if lhs.isFolder != rhs.isFolder { return rhs.isFolder }
             return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
         }
     }
@@ -292,7 +305,7 @@ final class FolderService {
 
         // Sort: folders first, then alphabetically
         return items.sorted { lhs, rhs in
-            if lhs.isFolder != rhs.isFolder { return lhs.isFolder }
+            if lhs.isFolder != rhs.isFolder { return rhs.isFolder }
             return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
         }
     }

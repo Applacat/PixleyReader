@@ -9,7 +9,7 @@ struct ChatMessage: Identifiable, Sendable {
     let content: String
     let timestamp: Date
 
-    enum Role {
+    enum Role: Sendable {
         case user
         case assistant
     }

@@ -22,6 +22,17 @@ localPackages:
   - Packages/aimdRenderer
 
 targets:
+  AIMDReaderTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/AIMDReaderTests
+    settings:
+      base:
+        TEST_HOST: ""
+        BUNDLE_LOADER: ""
+        GENERATE_INFOPLIST_FILE: YES
+
   AIMDReader:
     type: application
     platform: macOS
@@ -38,7 +49,7 @@ targets:
       - package: aimdRenderer
     settings:
       base:
-        PRODUCT_NAME: AI.md Reader
+        PRODUCT_NAME: Pixley Markdown Reader
         PRODUCT_BUNDLE_IDENTIFIER: com.aimd.reader
         INFOPLIST_FILE: Resources/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -47,8 +58,8 @@ targets:
     info:
       path: Resources/Info.plist
       properties:
-        CFBundleName: AI.md Reader
-        CFBundleDisplayName: AI.md Reader
+        CFBundleName: Pixley Markdown Reader
+        CFBundleDisplayName: Pixley Reader
         CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleShortVersionString: $(MARKETING_VERSION)
@@ -90,8 +101,13 @@ schemes:
     build:
       targets:
         AIMDReader: all
+        AIMDReaderTests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - AIMDReaderTests
     profile:
       config: Release
     analyze:

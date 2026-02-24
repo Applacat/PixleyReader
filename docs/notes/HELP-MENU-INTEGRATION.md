@@ -13,7 +13,7 @@ Added two new CommandGroups:
 #### Help Menu
 ```swift
 CommandGroup(replacing: .help) {
-    Button("AI.md Reader Help") {
+    Button("Pixley Markdown Reader Help") {
         openWelcomeToPage("01-Welcome.md")
     }
     .keyboardShortcut("/", modifiers: [.command])
@@ -29,21 +29,21 @@ CommandGroup(replacing: .help) {
 ```
 
 **Accessible via:**
-- Menu bar → Help → AI.md Reader Help (⌘/)
+- Menu bar → Help → Pixley Markdown Reader Help (⌘/)
 - Menu bar → Help → Getting Started
 - Menu bar → Help → Report a Bug (opens in browser)
 
 #### About Menu
 ```swift
 CommandGroup(replacing: .appInfo) {
-    Button("About AI.md Reader") {
+    Button("About Pixley Markdown Reader") {
         openWelcomeToPage("About.md")
     }
 }
 ```
 
 **Accessible via:**
-- Menu bar → AI.md Reader → About AI.md Reader
+- Menu bar → Pixley Markdown Reader → About Pixley Markdown Reader
 
 ---
 
@@ -112,7 +112,7 @@ Comprehensive tutorial covering:
 
 ### User Flow:
 
-1. **User clicks "Help → AI.md Reader Help"**
+1. **User clicks "Help → Pixley Markdown Reader Help"**
 2. `openWelcomeToPage("01-Welcome.md")` is called
 3. Welcome folder is copied from bundle to temp directory
 4. App opens 01-Welcome.md in the browser window
@@ -120,7 +120,7 @@ Comprehensive tutorial covering:
 
 ### User Flow (About):
 
-1. **User clicks "AI.md Reader → About AI.md Reader"**
+1. **User clicks "Pixley Markdown Reader → About Pixley Markdown Reader"**
 2. `openWelcomeToPage("About.md")` is called
 3. Welcome folder is copied to temp
 4. About.md opens showing credits, version info, etc.
@@ -145,11 +145,11 @@ Welcome/
 ## Testing Checklist
 
 - [ ] Launch app
-- [ ] Go to **Help → AI.md Reader Help** (⌘/)
+- [ ] Go to **Help → Pixley Markdown Reader Help** (⌘/)
     - [ ] Should open 01-Welcome.md in browser
 - [ ] Go to **Help → Getting Started**
     - [ ] Should open 02-Getting-Started.md
-- [ ] Go to **AI.md Reader → About AI.md Reader**
+- [ ] Go to **Pixley Markdown Reader → About Pixley Markdown Reader**
     - [ ] Should open About.md with credits
 - [ ] Click **Help → Report a Bug**
     - [ ] Should open GitHub in default browser

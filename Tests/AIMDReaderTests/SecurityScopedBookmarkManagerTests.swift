@@ -1,15 +1,6 @@
 import XCTest
 import Foundation
 
-// MARK: - Test Helpers
-
-extension String {
-    /// Safely convert string to Data for tests - returns empty Data if conversion fails
-    var testData: Data {
-        data(using: .utf8) ?? Data()
-    }
-}
-
 // MARK: - Test-Only Type Definition
 // Since SecurityScopedBookmarkManager is in the main app (executable target),
 // we mirror the implementation here for testing the logic.
@@ -50,15 +41,12 @@ final class SecurityScopedBookmarkManagerTests: XCTestCase {
 
     private var manager: TestableBookmarkManager!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
-        manager = TestableBookmarkManager()
+    override func setUp() async throws {
+        manager = await TestableBookmarkManager()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         manager = nil
-        super.tearDown()
     }
 
     // MARK: - Bookmark Key Tests

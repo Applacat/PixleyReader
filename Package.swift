@@ -20,9 +20,15 @@ let package = Package(
                 "Open",
                 "project.yml",
                 "CLAUDE.md",
+                "INDEX.md",
                 "Resources/Info.plist",
                 "Resources/AIMDReader.entitlements",
-                "Packages"
+                "Resources/ACKNOWLEDGMENTS.md",
+                "Packages",
+                "Tests",
+                "REFERENCE",
+                "scratch",
+                "scripts"
             ],
             sources: ["Sources"],
             resources: [
@@ -30,6 +36,10 @@ let package = Package(
                 .copy("Resources/Welcome"),
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ]
+        ),
+        .testTarget(
+            name: "AIMDReaderTests",
+            path: "Tests/AIMDReaderTests"
         )
     ]
 )

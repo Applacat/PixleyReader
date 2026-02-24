@@ -63,6 +63,9 @@ struct ErrorBanner: View {
 struct ErrorBannerOverlay: ViewModifier {
 
     @Environment(\.coordinator) private var coordinator
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private let errorDismissTimeout: Duration = .seconds(5)
 
     func body(content: Content) -> some View {
         content.overlay(alignment: .bottom) {
@@ -71,7 +74,7 @@ struct ErrorBannerOverlay: ViewModifier {
                     coordinator.dismissError()
                 }
                 .animation(
-                    NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+                    reduceMotion
                         ? .none
                         : .spring(response: 0.4, dampingFraction: 0.8),
                     value: coordinator.ui.currentError
@@ -80,7 +83,7 @@ struct ErrorBannerOverlay: ViewModifier {
         }
         .task(id: coordinator.ui.currentError) {
             guard coordinator.ui.currentError != nil else { return }
-            try? await Task.sleep(for: .seconds(5))
+            try? await Task.sleep(for: errorDismissTimeout)
             guard !Task.isCancelled else { return }
             coordinator.dismissError()
         }

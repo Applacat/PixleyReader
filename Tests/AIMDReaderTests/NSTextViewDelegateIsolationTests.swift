@@ -38,15 +38,12 @@ final class NSTextViewDelegateIsolationTests: XCTestCase {
 
     private var handler: TestableTextChangeHandler!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
-        handler = TestableTextChangeHandler()
+    override func setUp() async throws {
+        handler = await TestableTextChangeHandler()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         handler = nil
-        super.tearDown()
     }
 
     // MARK: - Synchronous Update Tests

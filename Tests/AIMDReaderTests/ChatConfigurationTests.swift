@@ -3,113 +3,75 @@ import XCTest
 // MARK: - Test-Only Type Definition
 // Since ChatConfiguration is in the main app (executable target),
 // we mirror the implementation here for testing the logic.
+//
+// IMPORTANT: This mirror must match production ChatConfiguration exactly.
+// Production source: Sources/Models/ChatConfiguration.swift
 
-/// Test version of ChatConfiguration
+/// Test version of ChatConfiguration — mirrors production values.
+/// If production changes, update this mirror and these tests.
 private enum TestableChatConfiguration {
 
     // MARK: - Message Limits
 
+    /// Maximum number of messages to keep in chat history display
     static let maxMessageHistory = 50
+
+    /// Maximum allowed input length (characters) for user questions
     static let maxInputLength = 2000
 
-    // MARK: - Context Limits
+    // MARK: - Foundation Models Limits
 
-    static let maxContextTokens = 4096
-    static let charsPerToken = 4
-    static let maxContextChars = maxContextTokens * charsPerToken
-    static let maxContextLength = 8000
+    /// Maximum document characters to include in instructions (~800 tokens).
+    /// Leaves headroom for conversation within the 4096-token context window.
+    static let maxDocumentChars = 2500
 
-    // MARK: - Conversation Context
+    /// Auto-reset session after this many Q&A round-trips.
+    /// Prevents context window exhaustion on long conversations.
+    static let maxTurnsBeforeReset = 3
 
-    static let conversationDocExcerpt = 2000
-    static let recentMessageCount = 6
-    static let promptOverhead = 200
+    /// Timeout for each Foundation Models respond() call (in seconds).
+    /// Prevents app freeze if the model hangs.
+    static let responseTimeoutSeconds: Double = 30
 }
 
 // MARK: - Tests
 
 final class ChatConfigurationTests: XCTestCase {
 
-    // MARK: - Constants Accessibility Tests
-
-    func testMaxMessageHistory_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.maxMessageHistory, 50)
-    }
-
-    func testMaxInputLength_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.maxInputLength, 2000)
-    }
-
-    func testMaxContextTokens_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.maxContextTokens, 4096)
-    }
-
-    func testCharsPerToken_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.charsPerToken, 4)
-    }
-
-    func testMaxContextLength_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.maxContextLength, 8000)
-    }
-
-    func testConversationDocExcerpt_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.conversationDocExcerpt, 2000)
-    }
-
-    func testRecentMessageCount_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.recentMessageCount, 6)
-    }
-
-    func testPromptOverhead_isAccessible() {
-        // Then: Constant is accessible and has expected value
-        XCTAssertEqual(TestableChatConfiguration.promptOverhead, 200)
-    }
-
-    // MARK: - Computed Properties Tests
-
-    func testMaxContextChars_computedCorrectly() {
-        // Given: Token limit and chars per token
-        let expectedChars = TestableChatConfiguration.maxContextTokens * TestableChatConfiguration.charsPerToken
-
-        // Then: maxContextChars equals tokens * charsPerToken
-        XCTAssertEqual(TestableChatConfiguration.maxContextChars, expectedChars)
-        XCTAssertEqual(TestableChatConfiguration.maxContextChars, 16384)  // 4096 * 4
-    }
-
     // MARK: - Value Consistency Tests
 
-    func testConversationDocExcerpt_lessThanMaxContextLength() {
-        // Then: Conversation excerpt is smaller than full context length
-        XCTAssertLessThan(
-            TestableChatConfiguration.conversationDocExcerpt,
-            TestableChatConfiguration.maxContextLength
+    func testMaxInputLength_isPositive() {
+        XCTAssertGreaterThan(TestableChatConfiguration.maxInputLength, 0)
+    }
+
+    func testMaxDocumentChars_fitsContextWindow() {
+        // Document chars (~800 tokens at ~3 chars/token) should leave room
+        // in the 4096-token context window for conversation history.
+        let estimatedDocTokens = TestableChatConfiguration.maxDocumentChars / 3
+        XCTAssertLessThan(estimatedDocTokens, 4096,
+            "Document char budget should leave room in the 4096-token context window")
+    }
+
+    func testMaxTurnsBeforeReset_isReasonable() {
+        // Should be at least 1 (allow at least one exchange)
+        // and not so large that context overflows
+        XCTAssertGreaterThanOrEqual(TestableChatConfiguration.maxTurnsBeforeReset, 1)
+        XCTAssertLessThanOrEqual(TestableChatConfiguration.maxTurnsBeforeReset, 20)
+    }
+
+    func testResponseTimeout_isReasonable() {
+        // Should be long enough for model to respond, but not so long the user thinks it froze
+        XCTAssertGreaterThanOrEqual(TestableChatConfiguration.responseTimeoutSeconds, 5)
+        XCTAssertLessThanOrEqual(TestableChatConfiguration.responseTimeoutSeconds, 120)
+    }
+
+    func testMaxMessageHistory_isGreaterThanMaxTurns() {
+        // Message history should accommodate more messages than the turn limit
+        // (each turn = 2 messages: user + assistant)
+        let messagesPerTurn = 2
+        XCTAssertGreaterThan(
+            TestableChatConfiguration.maxMessageHistory,
+            TestableChatConfiguration.maxTurnsBeforeReset * messagesPerTurn
         )
-    }
-
-    func testMaxContextLength_lessThanMaxContextChars() {
-        // Then: Max context length is less than max context chars
-        // (allows room for prompt overhead, history, etc.)
-        XCTAssertLessThan(
-            TestableChatConfiguration.maxContextLength,
-            TestableChatConfiguration.maxContextChars
-        )
-    }
-
-    func testPromptOverhead_reasonableSize() {
-        // Then: Prompt overhead is a reasonable value (not too small, not too large)
-        XCTAssertGreaterThan(TestableChatConfiguration.promptOverhead, 0)
-        XCTAssertLessThan(TestableChatConfiguration.promptOverhead, 1000)
-    }
-
-    func testRecentMessageCount_isEven() {
-        // Then: Recent message count is even (for user/assistant pairs)
-        XCTAssertEqual(TestableChatConfiguration.recentMessageCount % 2, 0)
     }
 }

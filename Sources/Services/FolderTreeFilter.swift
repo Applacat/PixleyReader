@@ -6,10 +6,10 @@ import Foundation
 /// Extracted from ContentView for testability.
 struct FolderTreeFilter {
 
-    /// Cache for filterByName results keyed by (itemCount, query).
-    /// Invalidated when the source items change.
+    /// Cache for filterByName results keyed by (rootPath, itemCount, query).
+    /// Invalidated when the source items, root folder, or query change.
     @MainActor
-    private static var nameFilterCache: (itemCount: Int, query: String, result: [FolderItem])?
+    private static var nameFilterCache: (rootPath: String, itemCount: Int, query: String, result: [FolderItem])?
 
     // MARK: - Filter Markdown Only
 
@@ -47,21 +47,23 @@ struct FolderTreeFilter {
     /// - Parameters:
     ///   - items: The root items to filter
     ///   - query: Case-insensitive partial match on filename
+    ///   - rootPath: Root folder path to disambiguate cache across different folders
     /// - Returns: Filtered items preserving parent folders of matches. Empty query returns items unchanged.
     @MainActor
-    static func filterByName(_ items: [FolderItem], query: String) -> [FolderItem] {
+    static func filterByName(_ items: [FolderItem], query: String, rootPath: String = "") -> [FolderItem] {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return items }
 
-        // Check cache
+        // Check cache (rootPath prevents stale results when switching folders)
         if let cached = nameFilterCache,
+           cached.rootPath == rootPath,
            cached.itemCount == items.count,
            cached.query == trimmed {
             return cached.result
         }
 
         let result = _filterByName(items, query: trimmed)
-        nameFilterCache = (itemCount: items.count, query: trimmed, result: result)
+        nameFilterCache = (rootPath: rootPath, itemCount: items.count, query: trimmed, result: result)
         return result
     }
 

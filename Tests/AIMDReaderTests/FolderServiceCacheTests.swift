@@ -57,15 +57,12 @@ final class FolderServiceCacheTests: XCTestCase {
 
     private var manager: TestableCacheManager!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
-        manager = TestableCacheManager()
+    override func setUp() async throws {
+        manager = await TestableCacheManager()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         manager = nil
-        super.tearDown()
     }
 
     // MARK: - Basic Invalidation Tests

@@ -1,7 +1,7 @@
-# OOD Guide for AI.md Reader
+# OOD Guide for Pixley Markdown Reader
 ## Object-Oriented Data Audit & Development Reference
 
-**Project:** AI.md Reader (macOS markdown browser with AI chat)
+**Project:** Pixley Markdown Reader (macOS markdown browser with AI chat)
 **Pattern:** Object-Oriented Data (OOD)
 **Last Updated:** February 3, 2026
 
@@ -22,7 +22,7 @@ When data is self-describing:
 
 ---
 
-## OOD in AI.md Reader: Current State Audit
+## OOD in Pixley Markdown Reader: Current State Audit
 
 ### ✅ Strong OOD Patterns (Keep These)
 
@@ -198,7 +198,7 @@ struct Conversation {
 
 ---
 
-### 🔍 OOD Audit Questions for AI.md Reader
+### 🔍 OOD Audit Questions for Pixley Markdown Reader
 
 Before adding features, ask:
 
@@ -322,14 +322,14 @@ private func openWelcomeFolderWithPrompt() {
 - ✅ **Demonstrates the pattern** - button is hardcoded, but execution flows through OOD infrastructure
 
 **The Pattern Validated:**
-This implementation proves the Wanderlust pattern works in AI.md Reader:
+This implementation proves the Wanderlust pattern works in Pixley Markdown Reader:
 1. **Schema defines capability** (`AppState.openWithFileContext` signature)
 2. **UI speaks schema's language** (passes fileURL + question)
 3. **No custom routing needed** - same `ChatView` handles both manual and button-triggered prompts
 4. **Human and AI converge** on same code path
 
 **Lessons from Wanderlust Applied:**
-Just like Wanderlust's "Edit Sheet handles both manual edits and AI edits," AI.md Reader's "ChatView handles both typed questions and button-triggered questions." The schema unifies all interaction modes.
+Just like Wanderlust's "Edit Sheet handles both manual edits and AI edits," Pixley Markdown Reader's "ChatView handles both typed questions and button-triggered questions." The schema unifies all interaction modes.
 
 ---
 
@@ -475,7 +475,7 @@ if isRecentlyModified(item) { ... }
 - **OOD Principles (Sacred):** Core manifesto
 - **OOD Commandments:** The 10 inviolable rules
 - **OOD Practical UX Applications:** Behavioral fences + modal confirmation pattern
-- **This Project:** AI.md Reader as exploration of OOD in a markdown browser
+- **This Project:** Pixley Markdown Reader as exploration of OOD in a markdown browser
 
 ---
 

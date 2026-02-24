@@ -38,6 +38,10 @@ public final class AppCoordinator {
     /// File metadata repository for persistence (optional - set after container init)
     public var metadata: FileMetadataRepository?
 
+    /// Debounced scroll save task — coalesces ~60 saves/sec into ~2/sec
+    private var scrollSaveTask: Task<Void, Never>?
+    private var pendingScrollPosition: (url: URL, position: Double)?
+
     // MARK: - Initialization
 
     public init() {}
@@ -57,12 +61,14 @@ public final class AppCoordinator {
 
     /// Closes the current folder and returns to start screen
     public func closeFolder() {
+        flushScrollPosition()
         navigation.closeFolder()
         document.clearContent()
     }
 
     /// Selects a file for viewing
     public func selectFile(_ url: URL) {
+        flushScrollPosition()
         navigation.selectFile(url)
         document.clearChanges()
     }
@@ -181,10 +187,27 @@ public final class AppCoordinator {
 
     // MARK: - Metadata Actions
 
-    /// Saves scroll position for the currently selected file
+    /// Saves scroll position for the currently selected file (debounced 500ms).
+    /// Coalesces ~60 scroll events/sec into at most 2 disk writes/sec.
     public func saveScrollPosition(_ position: Double) {
         guard let url = navigation.selectedFile else { return }
-        metadata?.saveScrollPosition(position, for: url)
+        pendingScrollPosition = (url: url, position: position)
+        scrollSaveTask?.cancel()
+        scrollSaveTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            self?.flushScrollPosition()
+        }
+    }
+
+    /// Flushes any pending scroll position save immediately.
+    /// Call on file switch or app termination.
+    public func flushScrollPosition() {
+        scrollSaveTask?.cancel()
+        scrollSaveTask = nil
+        guard let pending = pendingScrollPosition else { return }
+        pendingScrollPosition = nil
+        metadata?.saveScrollPosition(pending.position, for: pending.url)
     }
 
     /// Gets scroll position for a file
@@ -416,6 +439,8 @@ enum FileLoadError: LocalizedError {
 /// Environment key for injecting AppCoordinator into the view hierarchy.
 /// The shared instance provides a default for views that don't have a coordinator injected.
 /// In practice, the app always injects a coordinator explicitly via .environment(\.coordinator, coordinator).
+// @preconcurrency required: EnvironmentKey.defaultValue lacks @MainActor annotation.
+// Safe because SwiftUI accesses this on @MainActor view update path.
 private struct AppCoordinatorKey: @preconcurrency EnvironmentKey {
     @MainActor static var defaultValue = AppCoordinator()
 }

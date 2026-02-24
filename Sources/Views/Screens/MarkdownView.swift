@@ -165,7 +165,9 @@ struct MarkdownView: View {
         } else {
             coordinator.addBookmark(lineNumber: lineNumber)
         }
-        refreshBookmarks()
+        // Fetch bookmarks once after mutation (avoids double-fetch via refreshBookmarks)
+        let updated = coordinator.getBookmarks()
+        bookmarkedLines = Set(updated.map(\.lineNumber))
     }
 
     private func refreshBookmarks() {
@@ -177,8 +179,8 @@ struct MarkdownView: View {
 
     private func startWatching(_ url: URL) {
         if fileWatcher == nil {
-            fileWatcher = FileWatcher { [coordinator] in
-                coordinator.markDocumentChanged()
+            fileWatcher = FileWatcher { [weak coordinator] in
+                coordinator?.markDocumentChanged()
             }
         }
         fileWatcher?.watch(url)
@@ -191,6 +193,7 @@ struct MarkdownView: View {
 struct ReloadPill: View {
 
     let onReload: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 12) {
@@ -213,7 +216,7 @@ struct ReloadPill: View {
         .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
         .transition(.move(edge: .bottom).combined(with: .opacity))
         .animation(
-            NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+            reduceMotion
                 ? .none
                 : .spring(response: 0.4, dampingFraction: 0.8),
             value: true

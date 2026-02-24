@@ -157,7 +157,7 @@ public final class SwiftDataMetadataRepository: FileMetadataRepository {
 /// Initial schema version (v1.0.0).
 /// All future schema changes must add a new VersionedSchema and migration stage.
 public enum SchemaV1: VersionedSchema {
-    nonisolated(unsafe) public static var versionIdentifier = Schema.Version(1, 0, 0)
+    public static let versionIdentifier = Schema.Version(1, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [FileMetadata.self, Bookmark.self]
@@ -188,6 +188,8 @@ public enum MetadataContainerConfiguration {
     /// - Parameter inMemory: If true, uses in-memory storage (for testing)
     /// - Returns: Configured ModelContainer
     public static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
+        // macOS uses FileVault for full-disk encryption rather than per-file NSFileProtection.
+        // Data stored in Application Support is protected by the user's login keychain.
         let configuration = ModelConfiguration(
             isStoredInMemoryOnly: inMemory
         )

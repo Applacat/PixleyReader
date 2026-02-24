@@ -20,6 +20,11 @@ final class LineNumberRulerView: NSRulerView {
         self.clientView = textView
         self.ruleThickness = 40
 
+        // Decorative element — VoiceOver should skip this ruler.
+        // Line numbers are visual context, not meaningful content for screen readers.
+        setAccessibilityElement(false)
+        setAccessibilityRole(.unknown)
+
         NotificationCenter.default.addObserver(
             self, selector: #selector(textDidChange),
             name: NSText.didChangeNotification, object: textView

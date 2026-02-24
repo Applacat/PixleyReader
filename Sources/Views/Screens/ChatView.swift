@@ -23,8 +23,8 @@ struct ChatView: View {
     @State private var initialQuestionTask: Task<Void, Never>?
     @State private var showResetBanner = false
 
-    // Service for business logic
-    private let chatService = ChatService()
+    // Service for business logic — @State ensures single instance per view identity
+    @State private var chatService = ChatService()
 
     // MARK: - Body
 
@@ -85,6 +85,7 @@ struct ChatView: View {
                     .buttonStyle(.borderless)
                     .controlSize(.small)
                     .help("Forget conversation (ESC)")
+                    .accessibilityLabel("Clear conversation history")
                     .keyboardShortcut(.escape, modifiers: [])
                 }
             }
@@ -274,6 +275,7 @@ struct ChatView: View {
             .buttonStyle(.borderless)
             .foregroundStyle(inputText.isEmpty ? Color.secondary : Color.accentColor)
             .disabled(inputText.isEmpty || isLoading)
+            .accessibilityLabel("Send message")
         }
         .padding(16)
     }
@@ -348,6 +350,10 @@ struct ChatView: View {
         }
     }
 
+    /// State-as-Bridge pattern:
+    /// 1. Synchronous state mutation (isLoading = true) before await
+    /// 2. Async boundary delegated to chatService.ask()
+    /// 3. Synchronous state update (isLoading = false, messages.append) after await
     @MainActor
     private func askAI(_ question: String) async {
         isLoading = true
@@ -405,6 +411,7 @@ struct MessageBubble: View {
             }
         }
         .padding(.horizontal, 12)
+        .accessibilityValue(message.role == .user ? "Your message" : "Assistant response")
     }
 
     private var backgroundColor: Color {

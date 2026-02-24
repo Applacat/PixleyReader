@@ -33,6 +33,10 @@ struct OutlineFileList: NSViewRepresentable {
         outlineView.addTableColumn(column)
         outlineView.outlineTableColumn = column
 
+        // Accessibility
+        outlineView.setAccessibilityLabel("File browser")
+        outlineView.setAccessibilityHelp("Use arrow keys to navigate, left/right to expand/collapse folders, Return to select file")
+
         // Data source and delegate
         outlineView.dataSource = context.coordinator
         outlineView.delegate = context.coordinator
@@ -60,11 +64,19 @@ struct OutlineFileList: NSViewRepresentable {
         context.coordinator.onToggleFavorite = onToggleFavorite
         context.coordinator.selection = _selection
 
-        // Only reload if data actually changed
-        let itemsChanged = context.coordinator.items.count != items.count
+        // Pre-fetch favorites as Set<String> for O(1) lookup during cell configuration
+        context.coordinator.refreshFavoriteSet(items: items)
 
-        if itemsChanged {
-            context.coordinator.items = items
+        // Always keep coordinator's items in sync with SwiftUI
+        let oldCount = context.coordinator.items.count
+        context.coordinator.items = items
+
+        // Reload if item count changed or outline view is empty but should have content
+        let itemsChanged = oldCount != items.count
+        let outlineStale = outlineView.numberOfRows == 0 && !items.isEmpty
+
+        if itemsChanged || outlineStale {
+            context.coordinator.lastSyncedURL = nil  // Force re-sync after data reload
             outlineView.reloadData()
 
             // Restore from persistent expandedPaths (tracked incrementally via delegate)
@@ -73,6 +85,13 @@ struct OutlineFileList: NSViewRepresentable {
 
         // Sync selection from coordinator → NSOutlineView
         context.coordinator.syncSelection(outlineView: outlineView)
+    }
+
+    static func dismantleNSView(_ scrollView: NSScrollView, coordinator: Coordinator) {
+        if let outlineView = scrollView.documentView as? NSOutlineView {
+            outlineView.dataSource = nil
+            outlineView.delegate = nil
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -89,9 +108,13 @@ struct OutlineFileList: NSViewRepresentable {
         weak var outlineView: NSOutlineView?
         var isFavorite: ((URL) -> Bool)?
         var onToggleFavorite: ((URL) -> Void)?
+        /// Pre-fetched favorite paths for O(1) lookup during cell configuration
+        var favoritePathsSet = Set<String>()
         private var hasPerformedInitialExpansion = false
         /// Persistent set of expanded folder paths — maintained incrementally
         private var expandedPaths = Set<String>()
+        /// Tracks last URL we synced to, so we don't fight the user's keyboard navigation
+        fileprivate var lastSyncedURL: URL?
 
         /// Static placeholder to avoid repeated allocations in data source methods
         /// This is used only as a safety fallback and should never actually appear in UI
@@ -106,6 +129,27 @@ struct OutlineFileList: NSViewRepresentable {
             self.selection = selection
             self.isFavorite = isFavorite
             self.onToggleFavorite = onToggleFavorite
+        }
+
+        /// Pre-fetches all favorites into a Set for O(1) lookup during cell configuration.
+        func refreshFavoriteSet(items: [FolderItem]) {
+            guard let isFavorite else {
+                favoritePathsSet.removeAll()
+                return
+            }
+            var set = Set<String>()
+            func walk(_ items: [FolderItem]) {
+                for item in items {
+                    if item.isMarkdown, isFavorite(item.url) {
+                        set.insert(item.url.path)
+                    }
+                    if let children = item.children {
+                        walk(children)
+                    }
+                }
+            }
+            walk(items)
+            favoritePathsSet = set
         }
         
         // MARK: - Expansion State Management
@@ -226,8 +270,8 @@ struct OutlineFileList: NSViewRepresentable {
                 currentItem = parent
             }
 
-            // Configure content with indentation awareness
-            let favorited = folderItem.isMarkdown ? (isFavorite?(folderItem.url) ?? false) : false
+            // Configure content with indentation awareness (uses pre-fetched favorites set)
+            let favorited = folderItem.isMarkdown ? favoritePathsSet.contains(folderItem.url.path) : false
             cell.configure(with: folderItem, indentLevel: indentLevel, outlineView: outlineView, isFavorite: favorited, onToggleFavorite: onToggleFavorite)
 
             return cell
@@ -237,8 +281,14 @@ struct OutlineFileList: NSViewRepresentable {
 
         /// Syncs the coordinator's selectedFile to the NSOutlineView's visual selection.
         /// Called from updateNSView when the binding changes externally (e.g., AppDelegate, session restore).
+        /// Only acts when the binding value actually changes — prevents fighting the user's
+        /// keyboard navigation (e.g., arrow-keying to a folder shouldn't snap back to the last file).
         func syncSelection(outlineView: NSOutlineView) {
             let targetURL = selection.wrappedValue
+
+            // Don't fight the user's navigation if the binding hasn't changed
+            guard targetURL != lastSyncedURL else { return }
+            lastSyncedURL = targetURL
 
             // Get the currently selected item in the outline view
             let currentRow = outlineView.selectedRow
@@ -302,19 +352,18 @@ struct OutlineFileList: NSViewRepresentable {
                 return
             }
 
-            // Files: Only update selection for markdown files
-            // Non-markdown files can be selected but won't open
             if item.isMarkdown {
                 selection.wrappedValue = item.url
             } else if item.isFolder {
-                // Folders: toggle expansion on click, then deselect
-                if outlineView.isItemExpanded(item) {
-                    outlineView.collapseItem(item)
-                } else {
-                    outlineView.expandItem(item)
+                // Toggle expand/collapse on mouse click only (not keyboard navigation)
+                if let event = NSApp.currentEvent,
+                   event.type == .leftMouseUp || event.type == .leftMouseDown {
+                    if outlineView.isItemExpanded(item) {
+                        outlineView.collapseItem(item)
+                    } else {
+                        outlineView.expandItem(item)
+                    }
                 }
-                // Deselect folder so clicking again triggers selection change
-                outlineView.deselectRow(selectedRow)
             }
         }
 
@@ -463,6 +512,11 @@ final class FileCellView: NSTableCellView {
 
         nameLabel.stringValue = item.name
         nameLabel.textColor = (item.isMarkdown || item.isFolder) ? .labelColor : .secondaryLabelColor
+
+        // Accessibility: announce file type and favorite status to VoiceOver
+        let typePrefix = item.isFolder ? "Folder" : "File"
+        let favoriteStatus = isFavorite ? ", favorited" : ""
+        setAccessibilityLabel("\(typePrefix): \(item.name)\(favoriteStatus)")
 
         iconView.image = icon(for: item)
         iconView.contentTintColor = item.isFolder ? .systemBlue : (item.isMarkdown ? .labelColor : .secondaryLabelColor)
