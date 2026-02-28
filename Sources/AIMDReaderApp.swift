@@ -394,7 +394,9 @@ struct AIMDReaderApp: App {
 
         panel.begin { @MainActor response in
             guard response == .OK, let folderURL = panel.url else { return }
+            RecentFoldersManager.shared.addFolder(folderURL)
             self.coordinator.openFolder(folderURL)
+            self.coordinator.requestOpenBrowser()
         }
     }
 
