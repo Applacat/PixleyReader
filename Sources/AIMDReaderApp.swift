@@ -55,6 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Bookmark found — open silently
             coordinator.openFolder(resolvedURL)
             coordinator.selectFile(fileURL)
+            coordinator.requestSidebarCollapsed()
             activateOrOpenBrowser(coordinator)
             return
         }
@@ -77,6 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             RecentFoldersManager.shared.addFolder(grantedURL)
             coordinator.openFolder(grantedURL)
             coordinator.selectFile(fileURL)
+            coordinator.requestSidebarCollapsed()
             self.activateOrOpenBrowser(coordinator)
         }
     }
@@ -162,7 +164,7 @@ struct AIMDReaderApp: App {
         .restorationBehavior(.disabled)
         .defaultSize(width: 1200, height: 800)
         .commands {
-            CommandGroup(after: .newItem) {
+            CommandGroup(replacing: .newItem) {
                 Button(coordinator.navigation.rootFolderURL == nil ? "Choose Folder..." : "Change Folder...") {
                     openFolderPanel()
                 }

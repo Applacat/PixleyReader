@@ -250,6 +250,7 @@ struct StartView: View {
                     RecentFoldersManager.shared.addFolder(folderURL)
                     coordinator.openFolder(folderURL)
                     coordinator.selectFile(url)
+                    coordinator.requestSidebarCollapsed()
                     activateOrOpenBrowser()
                     dismissWindow(id: "start")
                 }

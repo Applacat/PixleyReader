@@ -148,6 +148,18 @@ public final class AppCoordinator {
         ui.shouldOpenBrowser = false
     }
 
+    /// Requests sidebar collapsed on next BrowserView appear (single-file open)
+    public func requestSidebarCollapsed() {
+        ui.prefersSidebarCollapsed = true
+    }
+
+    /// Consumes the sidebar-collapsed flag (returns true once, then resets)
+    public func consumeSidebarCollapsed() -> Bool {
+        guard ui.prefersSidebarCollapsed else { return false }
+        ui.prefersSidebarCollapsed = false
+        return true
+    }
+
     /// Clears the initial chat question (consumed after use)
     public func consumeInitialChatQuestion() -> String? {
         let question = ui.initialChatQuestion
@@ -321,6 +333,9 @@ public final class UIState {
 
     /// Whether the Quick Switcher overlay is visible
     public internal(set) var isQuickSwitcherVisible: Bool = false
+
+    /// Consume-once flag: sidebar should start collapsed (single-file open)
+    public internal(set) var prefersSidebarCollapsed: Bool = false
 
     // MARK: - Actions
 

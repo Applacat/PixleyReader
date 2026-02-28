@@ -326,8 +326,56 @@ struct MarkdownEditor: NSViewRepresentable {
 
         nonisolated func textView(_ textView: NSTextView, clickedOnLink link: Any, at charIndex: Int) -> Bool {
             guard let url = link as? URL else { return false }
-            NSWorkspace.shared.open(url)
-            return true
+
+            return MainActor.assumeIsolated {
+                if url.scheme == nil, let fragment = url.fragment {
+                    // Fragment-only link (e.g. #heading) — scroll to matching heading
+                    scrollToHeading(fragment: fragment, in: textView)
+                    return true
+                } else if url.scheme != nil {
+                    // External link — open in default browser
+                    NSWorkspace.shared.open(url)
+                    return true
+                }
+                // Malformed link (no scheme, no fragment) — ignore gracefully
+                return false
+            }
+        }
+
+        /// Scrolls to the heading whose GitHub-style slug matches the given fragment.
+        private func scrollToHeading(fragment: String, in textView: NSTextView) {
+            let text = textView.string
+            let lines = text.components(separatedBy: .newlines)
+            var searchOffset = 0
+
+            for line in lines {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                if trimmed.hasPrefix("#") {
+                    // Strip leading # characters and whitespace to get heading text
+                    let headingText = trimmed.drop(while: { $0 == "#" }).trimmingCharacters(in: .whitespaces)
+                    if Self.slugify(headingText) == fragment.lowercased() {
+                        let nsString = text as NSString
+                        let lineRange = nsString.range(of: line, range: NSRange(location: searchOffset, length: nsString.length - searchOffset))
+                        guard lineRange.location != NSNotFound else { continue }
+
+                        textView.scrollRangeToVisible(lineRange)
+                        textView.showFindIndicator(for: lineRange)
+                        return
+                    }
+                }
+                // Advance offset past this line + newline
+                searchOffset += line.utf16.count + 1
+            }
+        }
+
+        /// Converts heading text to a GitHub-style slug for anchor matching.
+        /// Lowercases, replaces spaces with hyphens, strips non-alphanumeric (except hyphens).
+        static func slugify(_ text: String) -> String {
+            text.lowercased()
+                .replacingOccurrences(of: " ", with: "-")
+                .unicodeScalars
+                .filter { CharacterSet.alphanumerics.contains($0) || $0 == "-" }
+                .reduce(into: "") { $0.unicodeScalars.append($1) }
         }
 
         // MARK: - Scroll Position

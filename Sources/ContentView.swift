@@ -30,6 +30,13 @@ struct BrowserView: View {
             }
         }
         .onDisappear {
+            // Only tear down if no other browser windows are still visible
+            // (prevents cascade when WindowGroup creates multiple instances)
+            let otherBrowserWindows = NSApp.windows.filter {
+                $0.identifier?.rawValue.contains("browser") == true && $0.isVisible
+            }
+            guard otherBrowserWindows.isEmpty else { return }
+
             // Invalidate cache for this folder
             if let folderURL = coordinator.navigation.rootFolderURL {
                 FolderService.shared.invalidateCache(for: folderURL)
@@ -58,6 +65,11 @@ struct BrowserView: View {
             // Consume the flag if it was set by menu commands
             if coordinator.ui.shouldOpenBrowser {
                 coordinator.consumeOpenBrowser()
+            }
+
+            // Single-file open: collapse sidebar to show document only
+            if coordinator.consumeSidebarCollapsed() {
+                columnVisibility = .detailOnly
             }
 
             // SceneStorage fallback — only if session restore didn't already set a file
@@ -163,6 +175,7 @@ struct BrowserView: View {
                     RecentFoldersManager.shared.addFolder(folderURL)
                     coordinator.openFolder(folderURL)
                     coordinator.selectFile(url)
+                    coordinator.requestSidebarCollapsed()
                 }
             }
         }
