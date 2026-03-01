@@ -15,3 +15,9 @@ xcuserdata/
 # IDE
 *.swp
 *~
+
+# Claude Code
+.claude/
+
+# Reference projects
+REFERENCE/
