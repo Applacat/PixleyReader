@@ -22,10 +22,10 @@
 		8C0B20D7D4D27728EDDC2860 /* LineNumberRulerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA82CF2CF6624869CCA5805 /* LineNumberRulerView.swift */; };
 		9706C359F15E7A8E0DFBE3E6 /* FolderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46C2079D5FC942799A84EAC /* FolderService.swift */; };
 		9B61A17A180E5068795FFF4D /* FolderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4483E0EF01008FD6766A84A2 /* FolderItem.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* FolderWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E7F8091A2B3C4D5E6F7081 /* FolderWatcher.swift */; };
 		AED2169653B5B667D912DB46 /* ACKNOWLEDGMENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = E6C1FBAB4B01432B18DC39AB /* ACKNOWLEDGMENTS.md */; };
 		B38F2D5327EDE837D4695F8D /* SecurityScopedBookmarkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB81EE3FB70820E95B314A5B /* SecurityScopedBookmarkManager.swift */; };
 		BB174584FE104D70D385E20E /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF93B49ABA3FCB6C03C7C38 /* FileWatcher.swift */; };
-		A1B2C3D4E5F60718293A4B5C /* FolderWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E7F8091A2B3C4D5E6F7081 /* FolderWatcher.swift */; };
 		BC04BAD3F95C917D34BB426D /* Welcome in Resources */ = {isa = PBXBuildFile; fileRef = A72700B55F5611A9AC19DEB3 /* Welcome */; };
 		BEEFBEB46ACBF94B9377CCC3 /* MarkdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C78C33F2E9C456D069393467 /* MarkdownView.swift */; };
 		BFD9484897D734404ED58CA7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B6BCC5252188EB88279BA7C /* Assets.xcassets */; };
@@ -51,7 +51,6 @@
 		252922C4505069106598EE0D /* SettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRepository.swift; sourceTree = "<group>"; };
 		31DD46F97E687CCA317452EB /* MarkdownHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownHighlighter.swift; sourceTree = "<group>"; };
 		3FF93B49ABA3FCB6C03C7C38 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
-		D6E7F8091A2B3C4D5E6F7081 /* FolderWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderWatcher.swift; sourceTree = "<group>"; };
 		4483E0EF01008FD6766A84A2 /* FolderItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderItem.swift; sourceTree = "<group>"; };
 		46778E27037908E1D84C4D2A /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		4B4F425D7CB9352121BDA059 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -77,6 +76,7 @@
 		C78C33F2E9C456D069393467 /* MarkdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownView.swift; sourceTree = "<group>"; };
 		CAA82CF2CF6624869CCA5805 /* LineNumberRulerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineNumberRulerView.swift; sourceTree = "<group>"; };
 		D5EDAF12A053E7D98F82C853 /* RecentFoldersManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentFoldersManager.swift; sourceTree = "<group>"; };
+		D6E7F8091A2B3C4D5E6F7081 /* FolderWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderWatcher.swift; sourceTree = "<group>"; };
 		DE3156F3B44B796A50CE6E86 /* FileMetadataRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileMetadataRepository.swift; sourceTree = "<group>"; };
 		E127865B25F512D96EE53163 /* SwiftDataMetadataRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataMetadataRepository.swift; sourceTree = "<group>"; };
 		E6C1FBAB4B01432B18DC39AB /* ACKNOWLEDGMENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ACKNOWLEDGMENTS.md; sourceTree = "<group>"; };
@@ -422,7 +422,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -435,7 +435,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aimd.reader;
 				PRODUCT_NAME = "Pixley Markdown Reader";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -522,7 +522,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -535,7 +535,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aimd.reader;
 				PRODUCT_NAME = "Pixley Markdown Reader";
 				PROVISIONING_PROFILE_SPECIFIER = "";
